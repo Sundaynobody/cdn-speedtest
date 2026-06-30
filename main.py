@@ -840,7 +840,7 @@ class SpeedTester:
         icon_path = resource_path(ICON_FILE)
         if os.path.exists(icon_path):
             try:
-                self.root.iconbitmap(default=icon_path)
+                self.root.iconbitmap(icon_path)
             except Exception:
                 pass
         self.current_node_idx = self._clamp(self.config["defaultIndex"])
