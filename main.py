@@ -1,12 +1,13 @@
-import ctypes, os, sys
+import ctypes, os, sys, platform
 
-try:
-    ctypes.windll.shcore.SetProcessDpiAwareness(1)
-except Exception:
+if platform.system() == "Windows":
     try:
-        ctypes.windll.user32.SetProcessDPIAware()
+        ctypes.windll.shcore.SetProcessDpiAwareness(1)
     except Exception:
-        pass
+        try:
+            ctypes.windll.user32.SetProcessDPIAware()
+        except Exception:
+            pass
 
 import threading, requests, time, json
 import tkinter as tk
@@ -18,8 +19,11 @@ VERSION = "4.2.0"
 CHUNK_SIZE = 65536
 UPDATE_INTERVAL = 1000
 CONFIG_FILE = "cdn_nodes.json"
-ICON_FILE = "icon.ico"
+ICON_FILE = "icon.ico"  # used in --add-data for PyInstaller
 THEME = "cosmo"
+
+_UI_FONT = {"Windows": "Microsoft YaHei UI", "Darwin": "PingFang SC"}.get(platform.system(), "Noto Sans CJK")
+_MONO_FONT = {"Windows": "Consolas", "Darwin": "Menlo"}.get(platform.system(), "Liberation Mono")
 
 LANG = {
     "en": {
@@ -554,6 +558,8 @@ def resource_path(filename):
 
 
 def get_dpi_factor(window):
+    if platform.system() != "Windows":
+        return 1.0
     try:
         dpi = ctypes.windll.user32.GetDpiForWindow(ctypes.wintypes.HWND(window.winfo_id()))
         if dpi > 0:
@@ -561,6 +567,24 @@ def get_dpi_factor(window):
     except Exception:
         pass
     return 1.0
+
+
+def set_window_icon(window):
+    if platform.system() == "Windows":
+        path = resource_path("icon.ico")
+        if os.path.exists(path):
+            try:
+                window.iconbitmap(path)
+                return
+            except Exception:
+                pass
+    path = resource_path("icon.png")
+    if os.path.exists(path):
+        try:
+            img = tk.PhotoImage(file=path)
+            window.iconphoto(True, img)
+        except Exception:
+            pass
 
 
 DEFAULT_CONFIG = {
@@ -616,12 +640,7 @@ class SettingsDialog:
         self.dialog.resizable(False, False)
         self.dialog.transient(parent)
         self.dialog.grab_set()
-        icon_path = resource_path(ICON_FILE)
-        if os.path.exists(icon_path):
-            try:
-                self.dialog.iconbitmap(icon_path)
-            except Exception:
-                pass
+        set_window_icon(self.dialog)
         self.config = config
         self.callback = callback
         self.sf = get_dpi_factor(self.dialog)
@@ -641,7 +660,7 @@ class SettingsDialog:
         lf = tb.Frame(frame)
         lf.pack(fill="x", pady=(0, 10))
         tb.Label(lf, text=t("language"),
-                 font=("Microsoft YaHei UI", 8),
+                 font=(_UI_FONT, 8),
                  foreground="#999").pack(side="left")
         lang_names = [LANG[code]["lang_name"] for code in _supported_langs]
         self.lang_combo = tb.Combobox(lf, values=lang_names, state="readonly", width=22)
@@ -651,7 +670,7 @@ class SettingsDialog:
         self.lang_combo.bind("<<ComboboxSelected>>", self._on_lang_change)
 
         tb.Label(frame, text=t("node_list"),
-                 font=("Microsoft YaHei UI", 11, "bold")).pack(anchor="w")
+                 font=(_UI_FONT, 11, "bold")).pack(anchor="w")
 
         lf2 = tb.Frame(frame)
         lf2.pack(fill="both", expand=True, pady=(8, 0))
@@ -679,7 +698,7 @@ class SettingsDialog:
         btm = tb.Frame(frame)
         btm.pack(fill="x", pady=(8, 0))
         self._hint = tb.Label(btm, text=t("auto_save_hint"),
-                              font=("Microsoft YaHei UI", 8),
+                              font=(_UI_FONT, 8),
                               foreground="#999")
         self._hint.pack(side="left")
         self._close = tb.Button(btm, text=t("close"),
@@ -818,11 +837,11 @@ class MetricCard(tb.LabelFrame):
     def __init__(self, master, value="--"):
         super().__init__(master, text="")
         self.title_label = tb.Label(self, text="",
-                                    font=("Microsoft YaHei UI", 8),
+                                    font=(_UI_FONT, 8),
                                     foreground="#999")
         self.title_label.pack(anchor="w", padx=8, pady=(8, 0))
         self.value_label = tb.Label(self, text=value,
-                                    font=("Consolas", 13, "bold"))
+                                    font=(_MONO_FONT, 13, "bold"))
         self.value_label.pack(anchor="w", fill="x", padx=8, pady=(0, 8))
 
     def set_title(self, text):
@@ -841,12 +860,7 @@ class SpeedTester:
         sf = dpi / 96.0
         self.root.geometry(f"{int(620*sf)}x{int(480*sf)}")
         self.root.resizable(False, False)
-        icon_path = resource_path(ICON_FILE)
-        if os.path.exists(icon_path):
-            try:
-                self.root.iconbitmap(icon_path)
-            except Exception:
-                pass
+        set_window_icon(self.root)
         self.current_node_idx = self._clamp(self.config["defaultIndex"])
         self.downloading = False
         self._stop_event = False
@@ -878,7 +892,7 @@ class SpeedTester:
         ic.pack(fill="x", pady=(0, 10))
         ir = tb.Frame(ic); ir.pack(fill="x", padx=12, pady=(8, 4))
         self.ip_title_label = tb.Label(ir, text=t("ip_address"),
-                                        font=("Microsoft YaHei UI", 8),
+                                        font=(_UI_FONT, 8),
                                         foreground="#999")
         self.ip_title_label.pack(side="left")
         bf = tb.Frame(ir); bf.pack(side="right")
@@ -896,10 +910,10 @@ class SpeedTester:
         self.start_btn.pack(side="left", padx=2)
         iv = tb.Frame(ic); iv.pack(fill="x", padx=12, pady=(2, 8))
         self.ip_label = tb.Label(iv, text=t("fetching"),
-                                 font=("Consolas", 16, "bold"))
+                                 font=(_MONO_FONT, 16, "bold"))
         self.ip_label.pack(side="left")
         self.location_label = tb.Label(iv, text="",
-                                       font=("Microsoft YaHei UI", 9),
+                                       font=(_UI_FONT, 9),
                                        foreground="#999")
         self.location_label.pack(side="left", padx=(12,0), pady=(4,0))
 
@@ -924,11 +938,11 @@ class SpeedTester:
         self.pf = tb.Frame(main)
         self.progress = tb.Progressbar(self.pf, mode="determinate", bootstyle=INFO)
         self.progress.pack(side="left", fill="x", expand=True)
-        self.pct_label = tb.Label(self.pf, text="", font=("Microsoft YaHei UI", 9))
+        self.pct_label = tb.Label(self.pf, text="", font=(_UI_FONT, 9))
         self.pct_label.pack(side="right", padx=(4, 0))
         sf2 = tb.Frame(main); sf2.pack(fill="x")
         self.status_label = tb.Label(sf2, text=t("ready"),
-                                     font=("Microsoft YaHei UI", 8),
+                                     font=(_UI_FONT, 8),
                                      foreground="#999")
         self.status_label.pack(side="left")
         self._fetch_ip_info()
@@ -1105,19 +1119,27 @@ class SpeedTester:
 
 
 def _get_monitor_dpi():
-    try:
-        hwnd = ctypes.windll.user32.GetDesktopWindow()
-        monitor = ctypes.windll.user32.MonitorFromWindow(hwnd, 2)
-        dx = ctypes.c_uint(); dy = ctypes.c_uint()
-        ctypes.windll.shcore.GetDpiForMonitor(monitor, 0, ctypes.byref(dx), ctypes.byref(dy))
-        return dx.value
-    except Exception:
-        return 96
+    if platform.system() == "Windows":
+        try:
+            hwnd = ctypes.windll.user32.GetDesktopWindow()
+            monitor = ctypes.windll.user32.MonitorFromWindow(hwnd, 2)
+            dx = ctypes.c_uint(); dy = ctypes.c_uint()
+            ctypes.windll.shcore.GetDpiForMonitor(monitor, 0, ctypes.byref(dx), ctypes.byref(dy))
+            return dx.value
+        except Exception:
+            pass
+    return 96
 
 def main():
-    dpi = _get_monitor_dpi()
     root = tk.Tk()
-    root.tk.call("tk", "scaling", dpi / 72.0)
+    if platform.system() == "Windows":
+        dpi = _get_monitor_dpi()
+        root.tk.call("tk", "scaling", dpi / 72.0)
+    else:
+        try:
+            dpi = int(root.winfo_fpixels('1i'))
+        except Exception:
+            dpi = 96
     tb.Style(theme=THEME)
     SpeedTester(root, dpi)
     root.mainloop()

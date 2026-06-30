@@ -59,6 +59,9 @@ def create_ico(sz):
     return img
 
 imgs = [create_ico(s) for s in SIZES]
-out = os.path.join(os.path.dirname(__file__), "icon.ico")
-imgs[0].save(out, format="ICO", sizes=[(s, s) for s in SIZES], append_images=imgs[1:])
-print(f"OK: {out}")
+base = os.path.dirname(__file__)
+imgs[0].save(os.path.join(base, "icon.ico"), format="ICO", sizes=[(s, s) for s in SIZES], append_images=imgs[1:])
+max_sz = max(SIZES)
+png = imgs[SIZES.index(max_sz)]
+png.save(os.path.join(base, "icon.png"), format="PNG")
+print(f"OK: icon.ico + icon.png")
