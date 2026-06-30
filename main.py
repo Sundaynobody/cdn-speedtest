@@ -914,7 +914,7 @@ class SpeedTester:
             self.metric_cards[key] = card
         gd.rowconfigure(0, weight=1); gd.rowconfigure(1, weight=1)
 
-        self.progress = tb.Progressbar(main, mode="indeterminate", bootstyle=INFO)
+        self.progress = tb.Progressbar(main, mode="determinate", bootstyle=INFO)
         sf2 = tb.Frame(main); sf2.pack(fill="x")
         self.status_label = tb.Label(sf2, text=t("ready"),
                                      font=("Microsoft YaHei UI", 8),
@@ -996,7 +996,7 @@ class SpeedTester:
         self.stop_btn.configure(state=NORMAL)
         self.settings_btn.configure(state=DISABLED)
         self.progress.pack(fill="x", pady=(0, 6))
-        self.progress.start()
+        self.progress.configure(value=0)
         self.status_label.configure(text=t("testing"), foreground="#2b8a3e")
         self.metric_cards["elapsed"].set_value(self._fmt_time(0))
         self.metric_cards["remain"].set_value(t("calculating"))
@@ -1013,7 +1013,7 @@ class SpeedTester:
         self.start_btn.configure(state=NORMAL)
         self.stop_btn.configure(state=DISABLED)
         self.settings_btn.configure(state=NORMAL)
-        self.progress.stop(); self.progress.pack_forget()
+        self.progress.pack_forget()
         if not self._test_error:
             self.status_label.configure(
                 text=t("complete") if not self._stop_event else t("stopped"),
@@ -1070,6 +1070,9 @@ class SpeedTester:
         self.metric_cards["avg"].set_value(self._format_speed(self.avg_speed))
         self.metric_cards["elapsed"].set_value(self._fmt_time(el))
         self.metric_cards["downloaded"].set_value(self._format_bytes(self.total_bytes))
+        if self.content_length > 0:
+            pct = min(100, int(self.total_bytes * 100 / self.content_length))
+            self.progress.configure(value=pct)
         if self.realtime_speed > 0:
             if self.content_length > 0:
                 rm = max(0, self.content_length - self.total_bytes) / self.realtime_speed
