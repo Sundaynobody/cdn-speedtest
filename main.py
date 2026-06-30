@@ -66,6 +66,10 @@ LANG = {
         "connection_failed": "Connection failed",
         "error": "Error: {msg}",
         "language": "Language",
+        "name_empty": "Name cannot be empty",
+        "url_empty": "URL cannot be empty",
+        "no_nodes": "No nodes available. Please add a node in Settings.",
+        "cannot_delete_last": "Cannot delete the last node.",
     },
     "zh": {
         "lang_name": "简体中文",
@@ -112,6 +116,10 @@ LANG = {
         "connection_failed": "连接失败",
         "error": "错误: {msg}",
         "language": "语言",
+        "name_empty": "名称不能为空",
+        "url_empty": "URL 不能为空",
+        "no_nodes": "没有可用节点，请在设置中添加节点。",
+        "cannot_delete_last": "无法删除最后一个节点。",
     },
     "fr": {
         "lang_name": "Fran\u00E7ais",
@@ -158,6 +166,10 @@ LANG = {
         "connection_failed": "\u00C9chec de connexion",
         "error": "Erreur : {msg}",
         "language": "Langue",
+        "name_empty": "Le nom ne peut pas être vide",
+        "url_empty": "L'URL ne peut pas être vide",
+        "no_nodes": "Aucun nœud disponible. Veuillez ajouter un nœud dans Paramètres.",
+        "cannot_delete_last": "Impossible de supprimer le dernier nœud.",
     },
     "de": {
         "lang_name": "Deutsch",
@@ -204,6 +216,10 @@ LANG = {
         "connection_failed": "Verbindung fehlgeschlagen",
         "error": "Fehler: {msg}",
         "language": "Sprache",
+        "name_empty": "Name darf nicht leer sein",
+        "url_empty": "URL darf nicht leer sein",
+        "no_nodes": "Keine Knoten verfügbar. Bitte fügen Sie einen Knoten in den Einstellungen hinzu.",
+        "cannot_delete_last": "Der letzte Knoten kann nicht gelöscht werden.",
     },
     "es": {
         "lang_name": "Espa\u00F1ol",
@@ -250,6 +266,10 @@ LANG = {
         "connection_failed": "Conexi\u00F3n fallida",
         "error": "Error: {msg}",
         "language": "Idioma",
+        "name_empty": "El nombre no puede estar vacío",
+        "url_empty": "La URL no puede estar vacía",
+        "no_nodes": "No hay nodos disponibles. Agregue un nodo en Configuración.",
+        "cannot_delete_last": "No se puede eliminar el último nodo.",
     },
     "pt": {
         "lang_name": "Portugu\u00EAs",
@@ -296,6 +316,10 @@ LANG = {
         "connection_failed": "Falha de conex\u00E3o",
         "error": "Erro: {msg}",
         "language": "Idioma",
+        "name_empty": "O nome não pode estar vazio",
+        "url_empty": "A URL não pode estar vazia",
+        "no_nodes": "Nenhum nó disponível. Adicione um nó em Configurações.",
+        "cannot_delete_last": "Não é possível excluir o último nó.",
     },
     "it": {
         "lang_name": "Italiano",
@@ -342,6 +366,10 @@ LANG = {
         "connection_failed": "Connessione fallita",
         "error": "Errore: {msg}",
         "language": "Lingua",
+        "name_empty": "Il nome non può essere vuoto",
+        "url_empty": "L'URL non può essere vuota",
+        "no_nodes": "Nessun nodo disponibile. Aggiungi un nodo in Impostazioni.",
+        "cannot_delete_last": "Impossibile eliminare l'ultimo nodo.",
     },
     "ru": {
         "lang_name": "\u0420\u0443\u0441\u0441\u043A\u0438\u0439",
@@ -388,6 +416,10 @@ LANG = {
         "connection_failed": "\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F",
         "error": "\u041E\u0448\u0438\u0431\u043A\u0430: {msg}",
         "language": "\u042F\u0437\u044B\u043A",
+        "name_empty": "\u0418\u043C\u044F \u043D\u0435 \u043C\u043E\u0436\u0435\u0442 \u0431\u044B\u0442\u044C \u043F\u0443\u0441\u0442\u044B\u043C",
+        "url_empty": "URL \u043D\u0435 \u043C\u043E\u0436\u0435\u0442 \u0431\u044B\u0442\u044C \u043F\u0443\u0441\u0442\u043E\u0439",
+        "no_nodes": "\u041D\u0435\u0442 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B\u0445 \u0443\u0437\u043B\u043E\u0432. \u0414\u043E\u0431\u0430\u0432\u044C\u0442\u0435 \u0443\u0437\u0435\u043B \u0432 \u043D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0430\u0445.",
+        "cannot_delete_last": "\u041D\u0435\u043B\u044C\u0437\u044F \u0443\u0434\u0430\u043B\u0438\u0442\u044C \u043F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\u0439 \u0443\u0437\u0435\u043B.",
     },
     "pl": {
         "lang_name": "Polski",
@@ -434,6 +466,10 @@ LANG = {
         "connection_failed": "Po\u0142\u0105czenie nieudane",
         "error": "B\u0142\u0105d: {msg}",
         "language": "J\u0119zyk",
+        "name_empty": "Nazwa nie mo\u017Ce by\u0107 pusta",
+        "url_empty": "URL nie mo\u017Ce by\u0107 pusty",
+        "no_nodes": "Brak dost\u0119pnych w\u0119z\u0142\u00F3w. Dodaj w\u0119ze\u0142 w Ustawieniach.",
+        "cannot_delete_last": "Nie mo\u017Cna usun\u0105\u0107 ostatniego w\u0119z\u0142a.",
     },
     "ar": {
         "lang_name": "\u0627\u0644\u0639\u0631\u0628\u064A\u0629",
@@ -480,6 +516,10 @@ LANG = {
         "connection_failed": "\u0641\u0634\u0644 \u0627\u0644\u0627\u062A\u0635\u0627\u0644",
         "error": "\u062E\u0637\u0623: {msg}",
         "language": "\u0627\u0644\u0644\u063A\u0629",
+        "name_empty": "\u064A\u062C\u0628 \u0623\u0646 \u0644\u0627 \u064A\u0643\u0648\u0646 \u0627\u0644\u0627\u0633\u0645 \u0641\u0627\u0631\u063A\u064B\u0627",
+        "url_empty": "\u064A\u062C\u0628 \u0623\u0646 \u0644\u0627 \u064A\u0643\u0648\u0646 URL \u0641\u0627\u0631\u063A\u064B\u0627",
+        "no_nodes": "\u0644\u0627 \u062A\u0648\u062C\u062F \u0639\u0642\u062F \u0645\u062A\u0627\u062D\u0629. \u064A\u0631\u062C\u0649 \u0625\u0636\u0627\u0641\u0629 \u0639\u0642\u062F\u0629 \u0641\u064A \u0627\u0644\u0625\u0639\u062F\u0627\u062F\u0627\u062A.",
+        "cannot_delete_last": "\u0644\u0627 \u064A\u0645\u0643\u0646 \u062D\u0630\u0641 \u0622\u062E\u0631 \u0639\u0642\u062F\u0629.",
     },
 }
 
@@ -685,14 +725,14 @@ class SettingsDialog:
             return
         name = name.strip()
         if not name:
-            messagebox.showwarning("", t("enter_name"), parent=self.dialog)
+            messagebox.showwarning("", t("name_empty"), parent=self.dialog)
             return
         url = simpledialog.askstring("", t("enter_url"), parent=self.dialog)
         if url is None:
             return
         url = url.strip()
         if not url:
-            messagebox.showwarning("", t("enter_url"), parent=self.dialog)
+            messagebox.showwarning("", t("url_empty"), parent=self.dialog)
             return
         self.config["nodes"].append({"name": name, "url": url})
         self._refresh_list(); save_config(self.config); self.callback(self.config)
@@ -707,14 +747,14 @@ class SettingsDialog:
             return
         name = name.strip()
         if not name:
-            messagebox.showwarning("", t("enter_name"), parent=self.dialog)
+            messagebox.showwarning("", t("name_empty"), parent=self.dialog)
             return
         url = simpledialog.askstring("", t("enter_url"), initialvalue=n["url"], parent=self.dialog)
         if url is None:
             return
         url = url.strip()
         if not url:
-            messagebox.showwarning("", t("enter_url"), parent=self.dialog)
+            messagebox.showwarning("", t("url_empty"), parent=self.dialog)
             return
         self.config["nodes"][idx] = {"name": name, "url": url}
         self._refresh_list(); save_config(self.config); self.callback(self.config)
@@ -722,6 +762,9 @@ class SettingsDialog:
     def _delete_node(self):
         idx = self._get_selected_idx()
         if idx is None:
+            return
+        if len(self.config["nodes"]) <= 1:
+            messagebox.showwarning("", t("cannot_delete_last"), parent=self.dialog)
             return
         nm = self.config["nodes"][idx]["name"]
         if messagebox.askyesno("", t("confirm_delete", name=nm), parent=self.dialog):
@@ -912,7 +955,7 @@ class SpeedTester:
                 loc = " \u2014 ".join(parts) if parts else ""
                 self.root.after(0, lambda i=ip, l=loc: (
                     self.ip_label.configure(text=i),
-                    self.location_label.configure(text=l) if l else None))
+                    self.location_label.configure(text=l)))
             except Exception:
                 try:
                     r = requests.get("https://api.ipify.org?format=json", timeout=8)
@@ -944,6 +987,9 @@ class SpeedTester:
 
     def start_test(self):
         if self.downloading: return
+        if not self.config["nodes"]:
+            messagebox.showwarning("", t("no_nodes"))
+            return
         self.downloading = True; self._stop_event = False
         self.start_time = self.last_time = time.time()
         self.total_bytes = self.last_bytes = 0
