@@ -877,9 +877,10 @@ class SpeedTester:
         ic = tb.LabelFrame(main, text="")
         ic.pack(fill="x", pady=(0, 10))
         ir = tb.Frame(ic); ir.pack(fill="x", padx=12, pady=(8, 4))
-        tb.Label(ir, text=t("ip_address"),
-                 font=("Microsoft YaHei UI", 8),
-                 foreground="#999").pack(side="left")
+        self.ip_title_label = tb.Label(ir, text=t("ip_address"),
+                                        font=("Microsoft YaHei UI", 8),
+                                        foreground="#999")
+        self.ip_title_label.pack(side="left")
         bf = tb.Frame(ir); bf.pack(side="right")
         self.settings_btn = tb.Button(bf, text=t("settings"),
                                        command=self._open_settings,
@@ -934,6 +935,7 @@ class SpeedTester:
 
     def _apply_language(self):
         self.root.title(t("app_title", VERSION=VERSION))
+        self.ip_title_label.configure(text=t("ip_address"))
         self.settings_btn.configure(text=t("settings"))
         self.stop_btn.configure(text=t("stop"))
         self.start_btn.configure(text=t("start_test"))
@@ -968,7 +970,9 @@ class SpeedTester:
                         self.ip_label.configure(text=i),
                         self.location_label.configure(text="")))
                 except Exception:
-                    self.root.after(0, lambda: self.ip_label.configure(text=t("failed")))
+                    self.root.after(0, lambda: (
+                        self.ip_label.configure(text=t("failed")),
+                        self.location_label.configure(text="")))
         threading.Thread(target=_task, daemon=True).start()
 
     def _format_speed(self, bps):
