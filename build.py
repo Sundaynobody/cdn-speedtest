@@ -7,7 +7,7 @@ Architecture notes:
            Needs separate Python installs (x86 + x64) on the same machine.
   Linux:   Use Docker+QEMU or CI/CD for cross-arch builds.
 """
-import os, sys, platform, shutil, subprocess, tempfile, argparse, struct
+import os, sys, platform, shutil, subprocess, tempfile, argparse
 
 ARCH_MAP = {"AMD64": "x86_64", "x86_64": "x86_64", "x86": "x86",
             "ARM64": "arm64", "aarch64": "arm64", "armv7l": "armv7"}
@@ -19,7 +19,9 @@ def _detect_arch(python_exe):
         "import platform, struct; print(platform.machine(), struct.calcsize('P')*8)"],
         text=True).strip()
     machine, bits = out.split()
-    return ARCH_MAP.get(machine, machine) + (" (32-bit)" if bits == "32" else "")
+    if bits == "32":
+        return "x86"
+    return ARCH_MAP.get(machine, machine)
 
 
 def build():
@@ -42,7 +44,14 @@ def build():
 
     print(f"Python: {python_exe}  =>  {host_arch}")
 
-    tmp = tempfile.mkdtemp(prefix="cdn-")
+    tmp_root = tempfile.gettempdir()
+    if system == "Windows":
+        user_dir = os.path.expanduser("~")
+        if tmp_root.startswith(user_dir):
+            fallback = r"C:\Temp"
+            if os.path.isdir(fallback):
+                tmp_root = fallback
+    tmp = tempfile.mkdtemp(prefix="cdn-", dir=tmp_root)
 
     for f in ("icon.ico", "icon.png"):
         p = os.path.join(src, f)

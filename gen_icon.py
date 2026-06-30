@@ -58,10 +58,11 @@ def create_ico(sz):
         d.text((tx, ty), "CDN", fill=TEXT_COLOR, font=f)
     return img
 
-imgs = [create_ico(s) for s in SIZES]
-base = os.path.dirname(__file__)
-imgs[0].save(os.path.join(base, "icon.ico"), format="ICO", sizes=[(s, s) for s in SIZES], append_images=imgs[1:])
-max_sz = max(SIZES)
-png = imgs[SIZES.index(max_sz)]
-png.save(os.path.join(base, "icon.png"), format="PNG")
-print(f"OK: icon.ico + icon.png")
+if __name__ == "__main__":
+    imgs = [create_ico(s) for s in SIZES]
+    base = os.path.dirname(__file__)
+    imgs[0].save(os.path.join(base, "icon.ico"), format="ICO", sizes=[(s, s) for s in SIZES], append_images=imgs[1:])
+    max_sz = max(SIZES)
+    png = imgs[SIZES.index(max_sz)]
+    png.save(os.path.join(base, "icon.png"), format="PNG")
+    print(f"OK: icon.ico + icon.png")

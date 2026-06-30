@@ -19,7 +19,6 @@ VERSION = "4.2.0"
 CHUNK_SIZE = 65536
 UPDATE_INTERVAL = 1000
 CONFIG_FILE = "cdn_nodes.json"
-ICON_FILE = "icon.ico"  # used in --add-data for PyInstaller
 THEME = "cosmo"
 
 _UI_FONT = {"Windows": "Microsoft YaHei UI", "Darwin": "PingFang SC"}.get(platform.system(), "Noto Sans CJK")
@@ -607,10 +606,11 @@ def load_config():
                 data = json.load(f)
                 nodes = data.get("nodes", [])
                 if isinstance(nodes, list) and len(nodes) > 0:
+                    valid = [n for n in nodes if isinstance(n, dict) and "name" in n and "url" in n]
                     return {
                         "defaultIndex": data.get("defaultIndex", 0),
                         "language": data.get("language", "en"),
-                        "nodes": nodes,
+                        "nodes": valid or [dict(n) for n in DEFAULT_CONFIG["nodes"]],
                     }
         except Exception:
             pass
@@ -866,6 +866,8 @@ class SpeedTester:
         self._stop_event = False
         self._test_error = False
         self._test_gen = 0
+        self._status_key = "ready"
+        self._status_msg = None
         self.start_time = 0
         self.total_bytes = 0
         self.last_bytes = 0
@@ -956,6 +958,11 @@ class SpeedTester:
         self._speed_frame.configure(text=f"  {t('speed_results')}  ")
         for lk, key in self.card_keys:
             self.metric_cards[key].set_title(t(lk))
+        sk, sm = self._status_key, self._status_msg
+        if sk == "error" and sm:
+            self.status_label.configure(text=t(sk, msg=sm))
+        else:
+            self.status_label.configure(text=t(sk))
 
     def _open_settings(self):
         SettingsDialog(self.root, self.config, self._on_config_updated)
@@ -1026,6 +1033,7 @@ class SpeedTester:
         self.pf.pack(fill="x", pady=(0, 6))
         self.progress.configure(value=0)
         self.pct_label.configure(text="0%")
+        self._status_key = "testing"; self._status_msg = None
         self.status_label.configure(text=t("testing"), foreground="#2b8a3e")
         self.metric_cards["elapsed"].set_value(self._fmt_time(0))
         self.metric_cards["remain"].set_value(t("calculating"))
@@ -1044,8 +1052,10 @@ class SpeedTester:
         self.settings_btn.configure(state=NORMAL)
         self.pf.pack_forget()
         if not self._test_error:
+            self._status_key = "complete" if not self._stop_event else "stopped"
+            self._status_msg = None
             self.status_label.configure(
-                text=t("complete") if not self._stop_event else t("stopped"),
+                text=t(self._status_key),
                 foreground="#2b8a3e" if not self._stop_event else "#c92a2a")
 
     def _download_task(self, gen):
@@ -1076,13 +1086,16 @@ class SpeedTester:
                     if te > 0: self.avg_speed = self.total_bytes / te
         except requests.exceptions.Timeout:
             self._test_error = True
+            self._status_key = "timeout"; self._status_msg = None
             self.root.after(0, lambda: self.status_label.configure(text=t("timeout"), foreground="#c92a2a"))
         except requests.exceptions.ConnectionError:
             self._test_error = True
+            self._status_key = "connection_failed"; self._status_msg = None
             self.root.after(0, lambda: self.status_label.configure(text=t("connection_failed"), foreground="#c92a2a"))
         except Exception as e:
             self._test_error = True
-            m = str(e)[:50]
+            self._status_key = "error"; self._status_msg = str(e)[:50]
+            m = self._status_msg
             self.root.after(0, lambda msg=m: self.status_label.configure(text=t("error", msg=msg), foreground="#c92a2a"))
         finally:
             self.root.after(0, lambda g=gen: self._finish_test(g))
