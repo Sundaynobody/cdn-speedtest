@@ -9,6 +9,7 @@ except Exception:
         pass
 
 import threading, requests, time, json
+import tkinter as tk
 import ttkbootstrap as tb
 from ttkbootstrap.constants import *
 from tkinter import messagebox, simpledialog, Toplevel
@@ -828,11 +829,12 @@ class MetricCard(tb.LabelFrame):
 
 
 class SpeedTester:
-    def __init__(self, root):
+    def __init__(self, root, dpi=96):
         self.root = root
+        self.dpi = dpi
         self.config = load_config()
         set_language(self.config.get("language", "en"))
-        sf = get_dpi_factor(root)
+        sf = dpi / 96.0
         self.root.geometry(f"{int(620*sf)}x{int(480*sf)}")
         self.root.resizable(False, False)
         icon_path = resource_path(ICON_FILE)
@@ -1091,13 +1093,22 @@ class SpeedTester:
         self.display_timer = self.root.after(UPDATE_INTERVAL, self._update_display)
 
 
-def main():
-    root = tb.Window(themename=THEME)
+def _get_monitor_dpi():
     try:
-        dpi = ctypes.windll.user32.GetDpiForWindow(ctypes.wintypes.HWND(root.winfo_id()))
-        if dpi > 0: root.tk.call("tk", "scaling", dpi / 72.0)
-    except Exception: pass
-    SpeedTester(root)
+        hwnd = ctypes.windll.user32.GetDesktopWindow()
+        monitor = ctypes.windll.user32.MonitorFromWindow(hwnd, 2)
+        dx = ctypes.c_uint(); dy = ctypes.c_uint()
+        ctypes.windll.shcore.GetDpiForMonitor(monitor, 0, ctypes.byref(dx), ctypes.byref(dy))
+        return dx.value
+    except Exception:
+        return 96
+
+def main():
+    dpi = _get_monitor_dpi()
+    root = tk.Tk()
+    root.tk.call("tk", "scaling", dpi / 72.0)
+    tb.Style(themename=THEME)
+    SpeedTester(root, dpi)
     root.mainloop()
 
 
