@@ -590,7 +590,11 @@ def load_config():
                     }
         except Exception:
             pass
-    return dict(DEFAULT_CONFIG)
+    return {
+        "defaultIndex": DEFAULT_CONFIG["defaultIndex"],
+        "language": DEFAULT_CONFIG["language"],
+        "nodes": [dict(n) for n in DEFAULT_CONFIG["nodes"]],
+    }
 
 
 def save_config(config):
@@ -907,10 +911,10 @@ class SpeedTester:
         self.card_keys = [("realtime_speed","realtime"),("max_speed","max"),
                           ("avg_speed","avg"),("elapsed","elapsed"),
                           ("remaining","remain"),("downloaded","downloaded")]
-        for i, (tk, key) in enumerate(self.card_keys):
+        for i, (lk, key) in enumerate(self.card_keys):
             r, c = i // 3, i % 3
             card = MetricCard(gd, "--")
-            card.set_title(t(tk))
+            card.set_title(t(lk))
             card.grid(row=r, column=c, padx=5, pady=5, sticky="nsew")
             gd.columnconfigure(c, weight=1)
             self.metric_cards[key] = card
@@ -934,8 +938,8 @@ class SpeedTester:
         self.stop_btn.configure(text=t("stop"))
         self.start_btn.configure(text=t("start_test"))
         self._speed_frame.configure(text=f"  {t('speed_results')}  ")
-        for tk, key in self.card_keys:
-            self.metric_cards[key].set_title(t(tk))
+        for lk, key in self.card_keys:
+            self.metric_cards[key].set_title(t(lk))
 
     def _open_settings(self):
         SettingsDialog(self.root, self.config, self._on_config_updated)
@@ -1081,6 +1085,8 @@ class SpeedTester:
             pct = min(100, int(self.total_bytes * 100 / self.content_length))
             self.progress.configure(value=pct)
             self.pct_label.configure(text=f"{pct}%")
+        else:
+            self.pct_label.configure(text="")
         if self.realtime_speed > 0:
             if self.content_length > 0:
                 rm = max(0, self.content_length - self.total_bytes) / self.realtime_speed
