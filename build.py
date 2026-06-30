@@ -1,12 +1,28 @@
-import os, sys, platform, shutil, subprocess, tempfile
+"""
+Build CDNSpeedTest for the current platform.
+
+Architecture notes:
+  macOS:  run with --arch universal2  to create a fat binary (Intel+Apple Silicon)
+  Windows: PyInstaller builds ONLY for the host Python's architecture.
+           Use CI/CD (GitHub Actions) or an ARM64 Windows VM for cross-arch builds.
+  Linux:   Same limitation — use Docker+QEMU or CI/CD for cross-arch builds.
+"""
+import os, sys, platform, shutil, subprocess, tempfile, argparse
 
 ARCH_MAP = {"AMD64": "x86_64", "x86_64": "x86_64", "x86": "x86",
             "ARM64": "arm64", "aarch64": "arm64", "armv7l": "armv7"}
 
 def build():
+    ap = argparse.ArgumentParser(description="Build CDNSpeedTest")
+    ap.add_argument("--arch", default=None,
+                    help="Target architecture (macOS: 'universal2', 'x86_64', 'arm64'; ignored on Windows/Linux)")
+    args = ap.parse_args()
+
     src = os.path.dirname(os.path.abspath(__file__))
     system = platform.system()
-    arch = ARCH_MAP.get(platform.machine(), platform.machine())
+    host_arch = ARCH_MAP.get(platform.machine(), platform.machine())
+    target_arch = host_arch
+
     tmp = tempfile.mkdtemp(prefix="cdn-")
 
     for f in ("icon.ico", "icon.png"):
@@ -22,17 +38,30 @@ def build():
         ico = os.path.join(tmp, "icon.ico")
         if os.path.exists(ico):
             flags.extend(["--icon", ico])
+        if args.arch:
+            print(f"WARNING: --arch is ignored on Windows. Building for host architecture: {host_arch}")
     elif system == "Darwin":
         flags.extend(["--windowed"])
+        if args.arch == "universal2":
+            flags.extend(["--target-arch", "universal2"])
+            target_arch = "universal2"
+        elif args.arch in ("x86_64", "arm64"):
+            flags.extend(["--target-arch", args.arch])
+            target_arch = args.arch
+        elif args.arch:
+            print(f"ERROR: Unsupported --arch '{args.arch}'. Use: universal2, x86_64, arm64")
+            shutil.rmtree(tmp, ignore_errors=True)
+            sys.exit(1)
     elif system == "Linux":
-        pass
+        if args.arch:
+            print(f"WARNING: --arch is ignored on Linux. Building for host architecture: {host_arch}")
 
     for f in ("icon.ico", "icon.png"):
         p = os.path.join(tmp, f)
         if os.path.exists(p):
             flags.extend(["--add-data", f"{p}{sep}."])
 
-    name = f"CDNSpeedTest_{arch}"
+    name = f"CDNSpeedTest_{target_arch}"
     if system == "Windows":
         name += ".exe"
 
