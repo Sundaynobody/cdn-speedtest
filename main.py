@@ -631,28 +631,28 @@ class SettingsDialog:
         self.dialog.geometry(f"{int(580*sf)}x{int(520*sf)}")
 
         frame = tb.Frame(self.dialog)
-        frame.pack(fill="both", expand=True, padx=int(16*sf), pady=int(16*sf))
+        frame.pack(fill="both", expand=True, padx=16, pady=16)
 
         lf = tb.Frame(frame)
-        lf.pack(fill="x", pady=(0, int(10*sf)))
+        lf.pack(fill="x", pady=(0, 10))
         tb.Label(lf, text=t("language"),
-                 font=("Microsoft YaHei UI", max(int(8*sf),6)),
+                 font=("Microsoft YaHei UI", 8),
                  foreground="#999").pack(side="left")
         lang_names = [LANG[code]["lang_name"] for code in _supported_langs]
         self.lang_combo = tb.Combobox(lf, values=lang_names, state="readonly", width=22)
-        self.lang_combo.pack(side="left", padx=(int(8*sf), 0))
+        self.lang_combo.pack(side="left", padx=(8, 0))
         ci = _supported_langs.index(self.config.get("language", "en"))
         self.lang_combo.current(ci)
         self.lang_combo.bind("<<ComboboxSelected>>", self._on_lang_change)
 
         tb.Label(frame, text=t("node_list"),
-                 font=("Microsoft YaHei UI", int(11*sf), "bold")).pack(anchor="w")
+                 font=("Microsoft YaHei UI", 11, "bold")).pack(anchor="w")
 
         lf2 = tb.Frame(frame)
-        lf2.pack(fill="both", expand=True, pady=(int(8*sf), 0))
+        lf2.pack(fill="both", expand=True, pady=(8, 0))
 
         self.tree = tb.Treeview(lf2, columns=("name","url","default"), show="headings", height=8)
-        for c, w in [("name",int(150*sf)),("url",int(300*sf)),("default",int(50*sf))]:
+        for c, w in [("name",150),("url",300),("default",50)]:
             self.tree.column(c, width=w, minwidth=max(w//3,40),
                              anchor="center" if c=="default" else "w")
         self._tree_headings()
@@ -663,18 +663,18 @@ class SettingsDialog:
         self._refresh_list()
 
         br = tb.Frame(frame)
-        br.pack(fill="x", pady=(int(8*sf), 0))
+        br.pack(fill="x", pady=(8, 0))
         self._btns.clear()
         for k in self.BTN_KEYS:
             cmd_name = self.BTN_MAP.get(k, f"_{k}")
             b = tb.Button(br, text=t(k), command=getattr(self, cmd_name))
-            b.pack(side="left", padx=int(2*sf), ipadx=int(4*sf))
+            b.pack(side="left", padx=2, ipadx=4)
             self._btns[k] = b
 
         btm = tb.Frame(frame)
-        btm.pack(fill="x", pady=(int(8*sf), 0))
+        btm.pack(fill="x", pady=(8, 0))
         self._hint = tb.Label(btm, text=t("auto_save_hint"),
-                              font=("Microsoft YaHei UI", max(int(8*sf),6)),
+                              font=("Microsoft YaHei UI", 8),
                               foreground="#999")
         self._hint.pack(side="left")
         self._close = tb.Button(btm, text=t("close"),
@@ -810,16 +810,15 @@ class SettingsDialog:
 
 
 class MetricCard(tb.LabelFrame):
-    def __init__(self, master, value="--", sf=1.0):
+    def __init__(self, master, value="--"):
         super().__init__(master, text="")
-        self._sf = sf
         self.title_label = tb.Label(self, text="",
-                                    font=("Microsoft YaHei UI", max(int(8*sf),6)),
+                                    font=("Microsoft YaHei UI", 8),
                                     foreground="#999")
-        self.title_label.pack(anchor="w", padx=int(8*sf), pady=(int(8*sf), 0))
+        self.title_label.pack(anchor="w", padx=8, pady=(8, 0))
         self.value_label = tb.Label(self, text=value,
-                                    font=("Consolas", int(13*sf), "bold"))
-        self.value_label.pack(anchor="w", fill="x", padx=int(8*sf), pady=(0, int(8*sf)))
+                                    font=("Consolas", 13, "bold"))
+        self.value_label.pack(anchor="w", fill="x", padx=8, pady=(0, 8))
 
     def set_title(self, text):
         self.title_label.configure(text=text)
@@ -834,7 +833,6 @@ class SpeedTester:
         self.config = load_config()
         set_language(self.config.get("language", "en"))
         sf = get_dpi_factor(root)
-        self._sf = sf
         self.root.geometry(f"{int(620*sf)}x{int(480*sf)}")
         self.root.resizable(False, False)
         icon_path = resource_path(ICON_FILE)
@@ -865,57 +863,53 @@ class SpeedTester:
         ns = self.config["nodes"]
         return 0 if idx < 0 or idx >= len(ns) else idx
 
-    def _s(self, v):
-        return int(v * self._sf)
-
     def _setup_ui(self):
-        sf = self._sf
         self.root.title(t("app_title", VERSION=VERSION))
         main = tb.Frame(self.root)
-        main.pack(fill="both", expand=True, padx=self._s(16), pady=self._s(16))
+        main.pack(fill="both", expand=True, padx=16, pady=16)
 
         ic = tb.LabelFrame(main, text="")
-        ic.pack(fill="x", pady=(0, self._s(10)))
-        ir = tb.Frame(ic); ir.pack(fill="x", padx=self._s(12), pady=(self._s(8), self._s(4)))
+        ic.pack(fill="x", pady=(0, 10))
+        ir = tb.Frame(ic); ir.pack(fill="x", padx=12, pady=(8, 4))
         tb.Label(ir, text=t("ip_address"),
-                 font=("Microsoft YaHei UI", max(self._s(8),6)),
+                 font=("Microsoft YaHei UI", 8),
                  foreground="#999").pack(side="left")
         bf = tb.Frame(ir); bf.pack(side="right")
         self.settings_btn = tb.Button(bf, text=t("settings"),
                                        command=self._open_settings,
                                        bootstyle="secondary,outline")
-        self.settings_btn.pack(side="left", padx=self._s(2))
+        self.settings_btn.pack(side="left", padx=2)
         self.stop_btn = tb.Button(bf, text=t("stop"),
                                    command=self.stop_test,
                                    bootstyle="danger,outline", state=DISABLED)
-        self.stop_btn.pack(side="left", padx=self._s(2))
+        self.stop_btn.pack(side="left", padx=2)
         self.start_btn = tb.Button(bf, text=t("start_test"),
                                     command=self.start_test,
                                     bootstyle="success")
-        self.start_btn.pack(side="left", padx=self._s(2))
-        iv = tb.Frame(ic); iv.pack(fill="x", padx=self._s(12), pady=(self._s(2), self._s(8)))
+        self.start_btn.pack(side="left", padx=2)
+        iv = tb.Frame(ic); iv.pack(fill="x", padx=12, pady=(2, 8))
         self.ip_label = tb.Label(iv, text=t("fetching"),
-                                 font=("Consolas", self._s(16), "bold"))
+                                 font=("Consolas", 16, "bold"))
         self.ip_label.pack(side="left")
         self.location_label = tb.Label(iv, text="",
-                                       font=("Microsoft YaHei UI", self._s(9)),
+                                       font=("Microsoft YaHei UI", 9),
                                        foreground="#999")
-        self.location_label.pack(side="left", padx=(self._s(12),0), pady=(self._s(4),0))
+        self.location_label.pack(side="left", padx=(12,0), pady=(4,0))
 
         self._speed_frame = tb.LabelFrame(main, text=f"  {t('speed_results')}  ")
-        self._speed_frame.pack(fill="both", expand=True, pady=(0, self._s(10)),
-                               ipadx=self._s(12), ipady=self._s(12))
+        self._speed_frame.pack(fill="both", expand=True, pady=(0, 10),
+                               ipadx=12, ipady=12)
         gd = tb.Frame(self._speed_frame)
-        gd.pack(fill="both", expand=True, padx=self._s(4), pady=self._s(4))
+        gd.pack(fill="both", expand=True, padx=4, pady=4)
 
         self.card_keys = [("realtime_speed","realtime"),("max_speed","max"),
                           ("avg_speed","avg"),("elapsed","elapsed"),
                           ("remaining","remain"),("downloaded","downloaded")]
         for i, (tk, key) in enumerate(self.card_keys):
             r, c = i // 3, i % 3
-            card = MetricCard(gd, "--", sf)
+            card = MetricCard(gd, "--")
             card.set_title(t(tk))
-            card.grid(row=r, column=c, padx=self._s(5), pady=self._s(5), sticky="nsew")
+            card.grid(row=r, column=c, padx=5, pady=5, sticky="nsew")
             gd.columnconfigure(c, weight=1)
             self.metric_cards[key] = card
         gd.rowconfigure(0, weight=1); gd.rowconfigure(1, weight=1)
@@ -923,7 +917,7 @@ class SpeedTester:
         self.progress = tb.Progressbar(main, mode="indeterminate", bootstyle=INFO)
         sf2 = tb.Frame(main); sf2.pack(fill="x")
         self.status_label = tb.Label(sf2, text=t("ready"),
-                                     font=("Microsoft YaHei UI", max(self._s(8),6)),
+                                     font=("Microsoft YaHei UI", 8),
                                      foreground="#999")
         self.status_label.pack(side="left")
         self._fetch_ip_info()
@@ -1001,7 +995,7 @@ class SpeedTester:
         self.start_btn.configure(state=DISABLED)
         self.stop_btn.configure(state=NORMAL)
         self.settings_btn.configure(state=DISABLED)
-        self.progress.pack(fill="x", pady=(0, self._s(6)))
+        self.progress.pack(fill="x", pady=(0, 6))
         self.progress.start()
         self.status_label.configure(text=t("testing"), foreground="#2b8a3e")
         self.metric_cards["elapsed"].set_value(self._fmt_time(0))
