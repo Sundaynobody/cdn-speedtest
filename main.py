@@ -1033,28 +1033,29 @@ class SpeedTester:
     def _download_task(self, gen):
         url = self.config["nodes"][self.current_node_idx]["url"]
         try:
-            s = requests.Session()
-            a = requests.adapters.HTTPAdapter(pool_connections=1, pool_maxsize=1, max_retries=0, pool_block=True)
-            s.mount("http://", a); s.mount("https://", a)
-            r = s.get(url, stream=True, timeout=(10, 30)); r.raise_for_status()
-            try:
-                self.content_length = int(r.headers.get("Content-Length", 0))
-                if self.content_length <= 0: self.content_length = 0
-            except Exception: self.content_length = 0
-            for ch in r.iter_content(chunk_size=CHUNK_SIZE):
-                if self._stop_event: break
-                if ch:
-                    now = time.time(); self.total_bytes += len(ch)
-                    el = now - self.last_time
-                    if el >= 0.8:
-                        sp = (self.total_bytes - self.last_bytes) / el
-                        self.realtime_speed = sp
-                        if sp > self.max_speed: self.max_speed = sp
-                        self.last_bytes = self.total_bytes; self.last_time = now
-                        te = now - self.start_time
-                        if te > 0: self.avg_speed = self.total_bytes / te
-            te = time.time() - self.start_time
-            if te > 0: self.avg_speed = self.total_bytes / te
+            with requests.Session() as s:
+                a = requests.adapters.HTTPAdapter(pool_connections=1, pool_maxsize=1, max_retries=0, pool_block=True)
+                s.mount("http://", a); s.mount("https://", a)
+                with s.get(url, stream=True, timeout=(10, 30)) as r:
+                    r.raise_for_status()
+                    try:
+                        self.content_length = int(r.headers.get("Content-Length", 0))
+                        if self.content_length <= 0: self.content_length = 0
+                    except Exception: self.content_length = 0
+                    for ch in r.iter_content(chunk_size=CHUNK_SIZE):
+                        if self._stop_event: break
+                        if ch:
+                            now = time.time(); self.total_bytes += len(ch)
+                            el = now - self.last_time
+                            if el >= 0.8:
+                                sp = (self.total_bytes - self.last_bytes) / el
+                                self.realtime_speed = sp
+                                if sp > self.max_speed: self.max_speed = sp
+                                self.last_bytes = self.total_bytes; self.last_time = now
+                                te = now - self.start_time
+                                if te > 0: self.avg_speed = self.total_bytes / te
+                    te = time.time() - self.start_time
+                    if te > 0: self.avg_speed = self.total_bytes / te
         except requests.exceptions.Timeout:
             self._test_error = True
             self.root.after(0, lambda: self.status_label.configure(text=t("timeout"), foreground="#c92a2a"))
