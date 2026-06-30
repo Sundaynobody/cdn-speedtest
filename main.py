@@ -1107,7 +1107,7 @@ def main():
     dpi = _get_monitor_dpi()
     root = tk.Tk()
     root.tk.call("tk", "scaling", dpi / 72.0)
-    tb.Style(themename=THEME)
+    tb.Style(theme=THEME)
     SpeedTester(root, dpi)
     root.mainloop()
 
