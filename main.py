@@ -914,7 +914,11 @@ class SpeedTester:
             self.metric_cards[key] = card
         gd.rowconfigure(0, weight=1); gd.rowconfigure(1, weight=1)
 
-        self.progress = tb.Progressbar(main, mode="determinate", bootstyle=INFO)
+        self.pf = tb.Frame(main)
+        self.progress = tb.Progressbar(self.pf, mode="determinate", bootstyle=INFO)
+        self.progress.pack(side="left", fill="x", expand=True)
+        self.pct_label = tb.Label(self.pf, text="", font=("Microsoft YaHei UI", 9))
+        self.pct_label.pack(side="right", padx=(4, 0))
         sf2 = tb.Frame(main); sf2.pack(fill="x")
         self.status_label = tb.Label(sf2, text=t("ready"),
                                      font=("Microsoft YaHei UI", 8),
@@ -995,8 +999,9 @@ class SpeedTester:
         self.start_btn.configure(state=DISABLED)
         self.stop_btn.configure(state=NORMAL)
         self.settings_btn.configure(state=DISABLED)
-        self.progress.pack(fill="x", pady=(0, 6))
+        self.pf.pack(fill="x", pady=(0, 6))
         self.progress.configure(value=0)
+        self.pct_label.configure(text="0%")
         self.status_label.configure(text=t("testing"), foreground="#2b8a3e")
         self.metric_cards["elapsed"].set_value(self._fmt_time(0))
         self.metric_cards["remain"].set_value(t("calculating"))
@@ -1013,7 +1018,7 @@ class SpeedTester:
         self.start_btn.configure(state=NORMAL)
         self.stop_btn.configure(state=DISABLED)
         self.settings_btn.configure(state=NORMAL)
-        self.progress.pack_forget()
+        self.pf.pack_forget()
         if not self._test_error:
             self.status_label.configure(
                 text=t("complete") if not self._stop_event else t("stopped"),
@@ -1073,6 +1078,7 @@ class SpeedTester:
         if self.content_length > 0:
             pct = min(100, int(self.total_bytes * 100 / self.content_length))
             self.progress.configure(value=pct)
+            self.pct_label.configure(text=f"{pct}%")
         if self.realtime_speed > 0:
             if self.content_length > 0:
                 rm = max(0, self.content_length - self.total_bytes) / self.realtime_speed
