@@ -1044,8 +1044,14 @@ class SpeedTester:
 
     def _run_powershell(self, cmd):
         try:
+            ps = "powershell"
+            if platform.architecture()[0] == "32bit" and platform.machine().endswith("64"):
+                sysnative = os.path.join(os.environ.get("SystemRoot", "C:\\Windows"), "sysnative",
+                                         "WindowsPowerShell", "v1.0", "powershell.exe")
+                if os.path.exists(sysnative):
+                    ps = sysnative
             r = subprocess.run(
-                ["powershell", "-NoProfile", "-Command", cmd],
+                [ps, "-NoProfile", "-Command", cmd],
                 capture_output=True, text=True, timeout=5,
                 creationflags=CREATE_NO_WINDOW
             )
