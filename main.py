@@ -991,6 +991,9 @@ class SpeedTester:
                 d = r.json(); ip = d.get("query", "")
                 parts = [p for p in [d.get("country"), d.get("regionName"), d.get("city")] if p]
                 loc = " \u2014 ".join(parts) if parts else ""
+                isp = d.get("isp", "").strip()
+                if isp:
+                    loc += f" \u00B7 {isp}"
                 self.root.after(0, lambda i=ip, l=loc: (
                     self.ip_label.configure(text=i),
                     self.location_label.configure(text=l)))
