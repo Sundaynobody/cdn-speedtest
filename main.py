@@ -1082,12 +1082,12 @@ class SpeedTester:
                 s = line.strip()
                 if s.startswith("SSID") and "BSSID" not in s:
                     d["ssid"] = s.split(":", 1)[1].strip()
-                elif "Receive rate (Mbps)" in s:
+                elif "rate" in s.lower() and "Mbps" in s:
                     try:
                         d["rate"] = float(s.split(":", 1)[1].strip())
                     except Exception:
                         pass
-                elif s.startswith("Channel"):
+                elif s.lower().startswith("channel"):
                     try:
                         ch = int(s.split(":", 1)[1].strip())
                         d["band"] = "6 GHz" if ch > 165 else ("5 GHz" if ch > 13 else "2.4 GHz")
@@ -1099,7 +1099,7 @@ class SpeedTester:
 
     def _win_get_eth(self):
         try:
-            ps_cmd = r'(Get-NetAdapter | Where-Object {$_.Status -eq "Up" -and $_.MediaType -ne 2})[0] | Select-Object Name, LinkSpeed | ConvertTo-Json'
+            ps_cmd = '(Get-NetAdapter -Physical | Where-Object MediaType -EQ "802.3" | Select-Object -First 1 Name, LinkSpeed) | ConvertTo-Json'
             r = subprocess.run(
                 ["powershell", "-NoProfile", "-Command", ps_cmd],
                 capture_output=True, text=True, timeout=5,
