@@ -9,7 +9,7 @@ if platform.system() == "Windows":
         except Exception:
             pass
 
-import threading, requests, time, json
+import threading, requests, time, json, subprocess
 import tkinter as tk
 import ttkbootstrap as tb
 from ttkbootstrap.constants import *
@@ -20,6 +20,7 @@ CHUNK_SIZE = 65536
 UPDATE_INTERVAL = 1000
 CONFIG_FILE = "cdn_nodes.json"
 THEME = "cosmo"
+CREATE_NO_WINDOW = 0x08000000
 
 _UI_FONT = {"Windows": "Microsoft YaHei UI", "Darwin": "PingFang SC"}.get(platform.system(), "Noto Sans CJK")
 _MONO_FONT = {"Windows": "Consolas", "Darwin": "Menlo"}.get(platform.system(), "Liberation Mono")
@@ -858,7 +859,7 @@ class SpeedTester:
         self.config = load_config()
         set_language(self.config.get("language", "en"))
         sf = dpi / 96.0
-        self.root.geometry(f"{int(620*sf)}x{int(480*sf)}")
+        self.root.geometry(f"{int(620*sf)}x{int(520*sf)}")
         self.root.resizable(False, False)
         set_window_icon(self.root)
         self.current_node_idx = self._clamp(self.config["defaultIndex"])
@@ -879,6 +880,8 @@ class SpeedTester:
         self.display_timer = None
         self.metric_cards = {}
         self._speed_frame = None
+        self._network_timer = None
+        self._network_cache = {"type": "unknown", "ssid": "", "rate": 0, "band": "", "name": ""}
         self._setup_ui()
 
     def _clamp(self, idx):
@@ -919,6 +922,13 @@ class SpeedTester:
                                        foreground="#999")
         self.location_label.pack(side="left", padx=(12,0), pady=(4,0))
 
+        nv = tb.Frame(ic); nv.pack(fill="x", padx=12, pady=(0, 6))
+        self.net_icon_label = tb.Label(nv, text="", font=(_UI_FONT, 12))
+        self.net_icon_label.pack(side="left")
+        self.net_label = tb.Label(nv, text="",
+                                   font=(_UI_FONT, 9), foreground="#999")
+        self.net_label.pack(side="left", padx=(4, 0))
+
         self._speed_frame = tb.LabelFrame(main, text=f"  {t('speed_results')}  ")
         self._speed_frame.pack(fill="both", expand=True, pady=(0, 10),
                                ipadx=12, ipady=12)
@@ -948,6 +958,7 @@ class SpeedTester:
                                      foreground="#999")
         self.status_label.pack(side="left")
         self._fetch_ip_info()
+        self._refresh_network_info()
 
     def _apply_language(self):
         self.root.title(t("app_title", VERSION=VERSION))
@@ -1013,6 +1024,197 @@ class SpeedTester:
         m, s = divmod(int(sec), 60)
         h, m = divmod(m, 60)
         return f"{h}h{m:02d}m{s:02d}s" if h else f"{m:02d}m{s:02d}s"
+
+    def _refresh_network_info(self):
+        threading.Thread(target=self._fetch_network_task, daemon=True).start()
+
+    def _fetch_network_task(self):
+        data = {"type": "unknown", "ssid": "", "rate": 0, "band": "", "name": ""}
+        try:
+            sys_name = platform.system()
+            if sys_name == "Windows":
+                data = self._win_get_wifi() or self._win_get_eth() or data
+            elif sys_name == "Darwin":
+                data = self._mac_get_wifi() or self._mac_get_eth() or data
+            else:
+                data = self._linux_get_net() or data
+        except Exception:
+            pass
+        self._network_cache = data
+        self.root.after(0, self._update_network_display)
+        self._network_timer = self.root.after(10000, self._refresh_network_info)
+
+    def _update_network_display(self):
+        d = self._network_cache
+        icon = "\U0001F4F6" if d["type"] == "wifi" else (
+              "\U0001F50C" if d["type"] == "ethernet" else "")
+        parts = []
+        sep = " \u00B7 "
+        if d["type"] == "wifi":
+            if d["ssid"]:
+                parts.append(d["ssid"])
+            if d["rate"] > 0:
+                parts.append(f"{d['rate']:.1f} Mbps")
+            if d["band"]:
+                parts.append(d["band"])
+        elif d["type"] == "ethernet":
+            if d["rate"] > 0:
+                parts.append(f"{d['rate']} Mbps")
+            else:
+                parts.append("--")
+        else:
+            parts.append("--")
+        text = sep.join(parts)
+        self.net_icon_label.configure(text=icon)
+        self.net_label.configure(text=text)
+
+    def _win_get_wifi(self):
+        try:
+            r = subprocess.run(
+                ["netsh", "wlan", "show", "interfaces"],
+                capture_output=True, text=True, timeout=5,
+                creationflags=CREATE_NO_WINDOW
+            )
+            if r.returncode != 0 or "SSID" not in r.stdout:
+                return None
+            d = {"type": "wifi", "ssid": "", "rate": 0, "band": "", "name": "Wi-Fi"}
+            for line in r.stdout.splitlines():
+                s = line.strip()
+                if s.startswith("SSID") and "BSSID" not in s:
+                    d["ssid"] = s.split(":", 1)[1].strip()
+                elif "Receive rate (Mbps)" in s:
+                    try:
+                        d["rate"] = float(s.split(":", 1)[1].strip())
+                    except Exception:
+                        pass
+                elif s.startswith("Channel"):
+                    try:
+                        ch = int(s.split(":", 1)[1].strip())
+                        d["band"] = "6 GHz" if ch > 165 else ("5 GHz" if ch > 13 else "2.4 GHz")
+                    except Exception:
+                        pass
+            return d if d["ssid"] else None
+        except Exception:
+            return None
+
+    def _win_get_eth(self):
+        try:
+            ps_cmd = r'(Get-NetAdapter | Where-Object {$_.Status -eq "Up" -and $_.MediaType -ne 2})[0] | Select-Object Name, LinkSpeed | ConvertTo-Json'
+            r = subprocess.run(
+                ["powershell", "-NoProfile", "-Command", ps_cmd],
+                capture_output=True, text=True, timeout=5,
+                creationflags=CREATE_NO_WINDOW
+            )
+            if r.returncode != 0 or not r.stdout.strip() or r.stdout.strip() in ("null", ""):
+                return None
+            import json
+            obj = json.loads(r.stdout)
+            speed_str = obj.get("LinkSpeed", "0")
+            rate = 0
+            if speed_str:
+                speed_str = str(speed_str)
+                if "Gbps" in speed_str:
+                    rate = float(speed_str.split()[0]) * 1000
+                elif "Mbps" in speed_str:
+                    rate = float(speed_str.split()[0])
+            return {"type": "ethernet", "ssid": "", "rate": rate,
+                    "band": "", "name": obj.get("Name", "Ethernet")}
+        except Exception:
+            return None
+
+    def _mac_get_wifi(self):
+        try:
+            airport = "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
+            if not os.path.exists(airport):
+                airport = "/usr/sbin/airport"
+                if not os.path.exists(airport):
+                    return None
+            r = subprocess.run([airport, "-I"], capture_output=True, text=True, timeout=5)
+            if r.returncode != 0:
+                return None
+            d = {"type": "wifi", "ssid": "", "rate": 0, "band": "", "name": "Wi-Fi"}
+            for line in r.stdout.splitlines():
+                s = line.strip()
+                if s.startswith("SSID"):
+                    d["ssid"] = s.split(":", 1)[1].strip()
+                elif "lastTxRate" in s:
+                    try:
+                        d["rate"] = float(s.split(":", 1)[1].strip())
+                    except Exception:
+                        pass
+                elif s.startswith("channel"):
+                    try:
+                        ch_str = s.split(":", 1)[1].strip()
+                        ch = int(ch_str.split(",")[0].strip())
+                        d["band"] = "6 GHz" if ch > 165 else ("5 GHz" if ch > 13 else "2.4 GHz")
+                    except Exception:
+                        pass
+            return d if d["ssid"] else None
+        except Exception:
+            return None
+
+    def _mac_get_eth(self):
+        try:
+            r = subprocess.run(["ifconfig", "-l"], capture_output=True, text=True, timeout=3)
+            ifaces = r.stdout.strip().split()
+            import re
+            for iface in ifaces:
+                if not iface.startswith("en"):
+                    continue
+                r2 = subprocess.run(["ifconfig", iface], capture_output=True, text=True, timeout=3)
+                if "status: active" in r2.stdout and "inet " in r2.stdout:
+                    m = re.search(r'(\d+)baseT', r2.stdout)
+                    if m:
+                        return {"type": "ethernet", "ssid": "", "rate": int(m.group(1)),
+                                "band": "", "name": "Ethernet"}
+            return None
+        except Exception:
+            return None
+
+    def _linux_get_net(self):
+        try:
+            import glob
+            for dev in glob.glob("/sys/class/net/*"):
+                name = dev.split("/")[-1]
+                try:
+                    op = open(f"{dev}/operstate").read().strip()
+                except Exception:
+                    continue
+                if op != "up":
+                    continue
+                if os.path.isdir(f"{dev}/wireless"):
+                    r = subprocess.run(["iw", "dev", name, "link"], capture_output=True, text=True, timeout=5)
+                    if r.returncode != 0:
+                        continue
+                    d = {"type": "wifi", "ssid": "", "rate": 0, "band": "", "name": name}
+                    for line in r.stdout.splitlines():
+                        s = line.strip()
+                        if s.startswith("SSID:"):
+                            d["ssid"] = s.split(":", 1)[1].strip()
+                        elif "freq:" in s:
+                            try:
+                                freq = int(s.split(":")[1].strip().split()[0])
+                                d["band"] = "6 GHz" if freq > 6000 else ("5 GHz" if freq > 2500 else "2.4 GHz")
+                            except Exception:
+                                pass
+                        elif "tx bitrate:" in s:
+                            import re
+                            m = re.search(r'([\d.]+)\s*MBit/s', s)
+                            if m:
+                                d["rate"] = float(m.group(1))
+                    if d["ssid"]:
+                        return d
+                else:
+                    try:
+                        speed = int(open(f"{dev}/speed").read().strip())
+                        if speed > 0:
+                            return {"type": "ethernet", "ssid": "", "rate": speed,
+                                    "band": "", "name": name}
+                    except Exception:
+                        pass
+            return None
+        except Exception:
+            return None
 
     def start_test(self):
         if self.downloading: return
