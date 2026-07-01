@@ -999,15 +999,26 @@ class SpeedTester:
                     self.location_label.configure(text=l)))
             except Exception:
                 try:
-                    r = requests.get("https://api.ipify.org?format=json", timeout=8)
-                    ip = r.json().get("ip", "")
-                    self.root.after(0, lambda i=ip: (
+                    r = requests.get("https://ipinfo.io/json", timeout=8)
+                    d = r.json(); ip = d.get("ip", "")
+                    loc = d.get("city", "") or ""
+                    org = d.get("org", "").strip()
+                    if org:
+                        loc += f" \u00B7 {org}" if loc else org
+                    self.root.after(0, lambda i=ip, l=loc: (
                         self.ip_label.configure(text=i),
-                        self.location_label.configure(text="")))
+                        self.location_label.configure(text=l)))
                 except Exception:
-                    self.root.after(0, lambda: (
-                        self.ip_label.configure(text=t("failed")),
-                        self.location_label.configure(text="")))
+                    try:
+                        r = requests.get("https://api.ipify.org?format=json", timeout=8)
+                        ip = r.json().get("ip", "")
+                        self.root.after(0, lambda i=ip: (
+                            self.ip_label.configure(text=i),
+                            self.location_label.configure(text="")))
+                    except Exception:
+                        self.root.after(0, lambda: (
+                            self.ip_label.configure(text=t("failed")),
+                            self.location_label.configure(text="")))
         threading.Thread(target=_task, daemon=True).start()
 
     def _format_speed(self, bps):
