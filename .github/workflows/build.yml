@@ -67,15 +67,16 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Build APK with Buildozer Docker
+      - name: Install buildozer
+        run: |
+          sudo apt update
+          sudo apt install -y python3-pip openjdk-17-jdk autoconf automake \
+            libtool pkg-config libssl-dev libffi-dev python3-dev
+          pip install --user buildozer cython
+      - name: Build APK
         run: |
           cd android
-          docker run --rm \
-            -v "$PWD":/app \
-            -v "$HOME/.buildozer":/home/user/.buildozer \
-            -e BUILDKIT_PROGRESS=plain \
-            kivy/buildozer:latest \
-            buildozer android debug
+          yes | buildozer android debug 2>&1
       - uses: actions/upload-artifact@v4
         with:
           name: CDNSpeedTest_Android
