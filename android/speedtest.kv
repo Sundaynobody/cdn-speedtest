@@ -1,0 +1,234 @@
+<MainScreen>:
+    ip_text: "Fetching..."
+    location_text: ""
+    network_text: "--"
+    status_text: "Ready"
+    node_name: ""
+    node_count: 0
+    progress_pct: 0
+    btn_start_text: "Start Test"
+    card_realtime: "--"
+    card_max: "--"
+    card_avg: "--"
+    card_downloaded: "--"
+    card_elapsed: "--"
+    card_remain: "--"
+
+    BoxLayout:
+        orientation: "vertical"
+        padding: "12dp"
+        spacing: "8dp"
+
+        # IP & Control row
+        BoxLayout:
+            size_hint_y: None
+            height: "80dp"
+            spacing: "8dp"
+
+            BoxLayout:
+                orientation: "vertical"
+                size_hint_x: 0.6
+
+                Label:
+                    text: root.ip_text
+                    font_size: "20sp"
+                    bold: True
+                    halign: "left"
+                    text_size: self.width, None
+
+                Label:
+                    text: root.location_text
+                    font_size: "11sp"
+                    color: "#999"
+                    halign: "left"
+                    text_size: self.width, None
+
+                Label:
+                    text: root.network_text
+                    font_size: "11sp"
+                    color: "#999"
+                    halign: "left"
+                    text_size: self.width, None
+
+            BoxLayout:
+                orientation: "vertical"
+                size_hint_x: 0.4
+                spacing: "4dp"
+
+                Button:
+                    text: root.btn_start_text
+                    size_hint_y: 0.5
+                    background_color: "#27ae60"
+                    on_release: root.start_test()
+
+                Button:
+                    text: "Stop"
+                    size_hint_y: 0.5
+                    background_color: "#c0392b"
+                    on_release: root.stop_test()
+
+        # Speed Results
+        BoxLayout:
+            orientation: "vertical"
+            size_hint_y: None
+            height: "160dp"
+
+            Label:
+                text: "Speed Results"
+                font_size: "14sp"
+                bold: True
+                halign: "left"
+                text_size: self.width, None
+                size_hint_y: None
+                height: "24dp"
+
+            GridLayout:
+                cols: 3
+                rows: 2
+                spacing: "4dp"
+
+                BoxLayout:
+                    orientation: "vertical"
+                    Label:
+                        text: "Real-time"
+                        font_size: "10sp"
+                        color: "#999"
+                    Label:
+                        text: root.card_realtime
+                        font_size: "14sp"
+                        bold: True
+
+                BoxLayout:
+                    orientation: "vertical"
+                    Label:
+                        text: "Max"
+                        font_size: "10sp"
+                        color: "#999"
+                    Label:
+                        text: root.card_max
+                        font_size: "14sp"
+                        bold: True
+
+                BoxLayout:
+                    orientation: "vertical"
+                    Label:
+                        text: "Average"
+                        font_size: "10sp"
+                        color: "#999"
+                    Label:
+                        text: root.card_avg
+                        font_size: "14sp"
+                        bold: True
+
+                BoxLayout:
+                    orientation: "vertical"
+                    Label:
+                        text: "Elapsed"
+                        font_size: "10sp"
+                        color: "#999"
+                    Label:
+                        text: root.card_elapsed
+                        font_size: "14sp"
+                        bold: True
+
+                BoxLayout:
+                    orientation: "vertical"
+                    Label:
+                        text: "Remaining"
+                        font_size: "10sp"
+                        color: "#999"
+                    Label:
+                        text: root.card_remain
+                        font_size: "14sp"
+                        bold: True
+
+                BoxLayout:
+                    orientation: "vertical"
+                    Label:
+                        text: "Downloaded"
+                        font_size: "10sp"
+                        color: "#999"
+                    Label:
+                        text: root.card_downloaded
+                        font_size: "14sp"
+                        bold: True
+
+        # Progress
+        BoxLayout:
+            size_hint_y: None
+            height: "30dp"
+            spacing: "8dp"
+
+            ProgressBar:
+                max: 100
+                value: root.progress_pct
+                size_hint_x: 0.8
+
+            Label:
+                text: f"{root.progress_pct}%"
+                size_hint_x: 0.2
+                halign: "right"
+
+        # Node & Status
+        BoxLayout:
+            size_hint_y: None
+            height: "40dp"
+            spacing: "8dp"
+
+            Label:
+                text: root.node_name
+                font_size: "12sp"
+                color: "#666"
+                halign: "left"
+                text_size: self.width, None
+                size_hint_x: 0.6
+
+            Button:
+                text: "Settings"
+                size_hint_x: 0.2
+                background_color: "#7f8c8d"
+                on_release: root.open_settings()
+
+        Label:
+            text: root.status_text
+            font_size: "11sp"
+            color: "#999"
+            size_hint_y: None
+            height: "20dp"
+
+
+<SettingsScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: "12dp"
+        spacing: "8dp"
+
+        BoxLayout:
+            size_hint_y: None
+            height: "40dp"
+            spacing: "8dp"
+
+            Button:
+                text: "< Back"
+                size_hint_x: 0.3
+                on_release: root.go_back()
+
+            Label:
+                text: "Node Manager"
+                bold: True
+                font_size: "16sp"
+                size_hint_x: 0.7
+
+        Label:
+            text: "Node List"
+            bold: True
+            font_size: "13sp"
+            size_hint_y: None
+            height: "24sp"
+
+        # Placeholder for node list
+        Label:
+            text: "Use the PC version to manage nodes"
+            color: "#999"
+            size_hint_y: None
+            height: "40dp"

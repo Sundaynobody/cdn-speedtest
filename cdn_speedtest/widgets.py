@@ -1,9 +1,8 @@
-import tkinter as tk
 import ttkbootstrap as tb
 from ttkbootstrap.constants import *
-from tkinter import filedialog, messagebox, simpledialog, Toplevel
+from tkinter import messagebox, simpledialog, Toplevel
 from .i18n import t, set_language, _supported_langs, LANG
-from .utils import get_dpi_factor, set_window_icon, resource_path, _UI_FONT, _MONO_FONT, save_config
+from .utils import get_dpi_factor, set_window_icon, _UI_FONT, _MONO_FONT, save_config
 
 
 class SettingsDialog:

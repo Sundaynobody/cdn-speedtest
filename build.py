@@ -113,11 +113,11 @@ def _find_python_by_arch(target_arch):
     if target_arch == "x86":
         patterns.extend([
             os.path.join(local, f"Python{suffix}-32")
-            for suffix in [f"3{n}" for n in range(13, 8, -1)]
+            for suffix in [f"3{n}" for n in range(13, 7, -1)]
         ])
         patterns.extend([
             os.path.join(prog86, f"Python{suffix}-32")
-            for suffix in [f"3{n}" for n in range(13, 8, -1)]
+            for suffix in [f"3{n}" for n in range(13, 7, -1)]
         ])
     for base in patterns:
         exe = os.path.join(base, "python.exe")

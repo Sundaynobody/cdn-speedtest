@@ -47,6 +47,7 @@ class SpeedTester(NetworkMixin, IpLocationMixin, DownloadMixin):
         self.metric_cards = {}
         self._speed_frame = None
         self._network_timer = None
+        self._ip_timer = None
         self._network_cache = {"type": "unknown", "ssid": "", "rate": 0, "band": "", "name": "", "signal": 0}
         self._setup_ui()
 
@@ -222,7 +223,7 @@ class SpeedTester(NetworkMixin, IpLocationMixin, DownloadMixin):
         d = self._build_report_data()
         ts = time.strftime("%Y%m%d_%H%M%S")
         name = f"CDNSpeedTest_Report_{ts}.json"
-        path = os.path.join(get_config_dir(), name)
+        path = os.path.join(os.getcwd(), name)
         try:
             self._save_report(path, d)
         except Exception:

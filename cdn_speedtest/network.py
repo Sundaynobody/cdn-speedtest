@@ -300,7 +300,6 @@ class NetworkMixin:
 
     def _linux_get_net(self):
         try:
-            import glob
             for dev in glob.glob("/sys/class/net/*"):
                 name = dev.split("/")[-1]
                 try:

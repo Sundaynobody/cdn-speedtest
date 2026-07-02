@@ -9,7 +9,18 @@ if platform.system() == "Windows":
         except Exception:
             pass
 
-VERSION = "4.3.0"
+# Windows 7 TLS 1.2 compatibility
+if platform.system() == "Windows" and platform.release() == "7":
+    try:
+        import ssl
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        ssl._create_default_https_context = lambda: ctx
+    except Exception:
+        pass
+
+VERSION = "4.3.1"
 CHUNK_SIZE = 1048576
 UPDATE_INTERVAL = 1000
 CONFIG_FILE = "cdn_nodes.json"
@@ -66,9 +77,10 @@ DEFAULT_CONFIG = {
     "defaultIndex": 0,
     "language": "en",
     "nodes": [
-        {"name": "Default Node", "url": "http://ota.justin-wg.com/Download/test.dat"},
-        {"name": "Speedtest Tokyo", "url": "http://speedtest1.jp/hosted/50mb.dat"},
-        {"name": "Speedtest Hong Kong", "url": "http://speedtest.hk/hosted/50mb.dat"},
-        {"name": "Speedtest Singapore", "url": "http://speedtest.singapore.com/hosted/50mb.dat"},
+        {"name": "Europe (Tele2 50MB)", "url": "http://speedtest.tele2.net/50MB.zip"},
+        {"name": "Europe (Tele2 100MB)", "url": "http://speedtest.tele2.net/100MB.zip"},
+        {"name": "Asia (Linode SG 100MB)", "url": "http://speedtest.singapore.linode.com/100MB-singapore.bin"},
+        {"name": "US East (Linode NJ 100MB)", "url": "http://speedtest.newark.linode.com/100MB-newark.bin"},
+        {"name": "Europe (Linode DE 100MB)", "url": "http://speedtest.frankfurt.linode.com/100MB-frankfurt.bin"},
     ],
 }

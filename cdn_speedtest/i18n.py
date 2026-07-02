@@ -150,6 +150,7 @@ LANG = {
         "url_empty": "L'URL ne peut pas \u00EAtre vide",
         "no_nodes": "Aucun n\u0153ud disponible. Veuillez ajouter un n\u0153ud dans Param\u00E8tres.",
         "cannot_delete_last": "Impossible de supprimer le dernier n\u0153ud.",
+        "export": "Exporter",
     },
     "de": {
         "lang_name": "Deutsch",
@@ -200,6 +201,7 @@ LANG = {
         "url_empty": "URL darf nicht leer sein",
         "no_nodes": "Keine Knoten verf\u00FCgbar. Bitte f\u00FCgen Sie einen Knoten in den Einstellungen hinzu.",
         "cannot_delete_last": "Der letzte Knoten kann nicht gel\u00F6scht werden.",
+        "export": "Exportieren",
     },
     "es": {
         "lang_name": "Espa\u00F1ol",
@@ -250,6 +252,7 @@ LANG = {
         "url_empty": "La URL no puede estar vac\u00EDa",
         "no_nodes": "No hay nodos disponibles. Agregue un nodo en Configuraci\u00F3n.",
         "cannot_delete_last": "No se puede eliminar el \u00FAltimo nodo.",
+        "export": "Exportar",
     },
     "pt": {
         "lang_name": "Portugu\u00EAs",
@@ -300,6 +303,7 @@ LANG = {
         "url_empty": "A URL n\u00E3o pode estar vazia",
         "no_nodes": "Nenhum n\u00F3 dispon\u00EDvel. Adicione um n\u00F3 em Configura\u00E7\u00F5es.",
         "cannot_delete_last": "N\u00E3o \u00E9 poss\u00EDvel excluir o \u00FAltimo n\u00F3.",
+        "export": "Exportar",
     },
     "it": {
         "lang_name": "Italiano",
@@ -350,6 +354,7 @@ LANG = {
         "url_empty": "L'URL non pu\u00F2 essere vuota",
         "no_nodes": "Nessun nodo disponibile. Aggiungi un nodo in Impostazioni.",
         "cannot_delete_last": "Impossibile eliminare l'ultimo nodo.",
+        "export": "Esporta",
     },
     "ru": {
         "lang_name": "\u0420\u0443\u0441\u0441\u043A\u0438\u0439",
@@ -400,6 +405,7 @@ LANG = {
         "url_empty": "URL \u043D\u0435 \u043C\u043E\u0436\u0435\u0442 \u0431\u044B\u0442\u044C \u043F\u0443\u0441\u0442\u043E\u0439",
         "no_nodes": "\u041D\u0435\u0442 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B\u0445 \u0443\u0437\u043B\u043E\u0432. \u0414\u043E\u0431\u0430\u0432\u044C\u0442\u0435 \u0443\u0437\u0435\u043B \u0432 \u043D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0430\u0445.",
         "cannot_delete_last": "\u041D\u0435\u043B\u044C\u0437\u044F \u0443\u0434\u0430\u043B\u0438\u0442\u044C \u043F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\u0439 \u0443\u0437\u0435\u043B.",
+        "export": "\u042D\u043A\u0441\u043F\u043E\u0440\u0442",
     },
     "pl": {
         "lang_name": "Polski",
@@ -450,6 +456,7 @@ LANG = {
         "url_empty": "URL nie mo\u017Ce by\u0107 pusty",
         "no_nodes": "Brak dost\u0119pnych w\u0119z\u0142\u00F3w. Dodaj w\u0119ze\u0142 w Ustawieniach.",
         "cannot_delete_last": "Nie mo\u017Cna usun\u0105\u0107 ostatniego w\u0119z\u0142a.",
+        "export": "Eksportuj",
     },
     "ar": {
         "lang_name": "\u0627\u0644\u0639\u0631\u0628\u064A\u0629",
@@ -500,6 +507,7 @@ LANG = {
         "url_empty": "\u064A\u062C\u0628 \u0623\u0646 \u0644\u0627 \u064A\u0643\u0648\u0646 URL \u0641\u0627\u0631\u063A\u064B\u0627",
         "no_nodes": "\u0644\u0627 \u062A\u0648\u062C\u062F \u0639\u0642\u062F \u0645\u062A\u0627\u062D\u0629. \u064A\u0631\u062C\u0649 \u0625\u0636\u0627\u0641\u0629 \u0639\u0642\u062F\u0629 \u0641\u064A \u0627\u0644\u0625\u0639\u062F\u0627\u062F\u0627\u062A.",
         "cannot_delete_last": "\u0644\u0627 \u064A\u0645\u0643\u0646 \u062D\u0630\u0641 \u0622\u062E\u0631 \u0639\u0642\u062F\u0629.",
+        "export": "\u062A\u0635\u062F\u064A\u0631",
     },
 }
 

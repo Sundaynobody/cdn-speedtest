@@ -62,7 +62,8 @@ class DownloadMixin:
             with requests.Session() as s:
                 with s.head(url, timeout=10) as r:
                     total_size = int(r.headers.get("Content-Length", 0))
-                    if r.headers.get("Accept-Ranges", "").lower() == "bytes":
+                    ar = r.headers.get("Accept-Ranges", "").lower()
+                    if ar and ar != "none" and "bytes" in ar:
                         supports_range = True
         except:
             pass
@@ -116,6 +117,8 @@ class DownloadMixin:
             for t in threads: t.join(timeout=2)
             final_total = sum(worker_bytes)
             self.total_bytes = final_total
+            if 0 < final_total < self.content_length:
+                self.content_length = final_total
             te = time.time() - self.start_time
             if te > 0: self.avg_speed = final_total / te
             if final_total <= 0:
@@ -142,6 +145,8 @@ class DownloadMixin:
                                 self.last_bytes = self.total_bytes; self.last_time = now
                                 te = now - self.start_time
                                 if te > 0: self.avg_speed = self.total_bytes / te
+                        if self.total_bytes < self.content_length:
+                            self.content_length = self.total_bytes
                         te = time.time() - self.start_time
                         if te > 0: self.avg_speed = self.total_bytes / te
             except requests.exceptions.Timeout:
@@ -161,6 +166,18 @@ class DownloadMixin:
 
     def _finish_test(self, gen):
         if gen != self._test_gen or self._stop_event: return
+        self.metric_cards["realtime"].set_value(_format_speed(self.realtime_speed))
+        self.metric_cards["max"].set_value(_format_speed(self.max_speed))
+        self.metric_cards["avg"].set_value(_format_speed(self.avg_speed))
+        self.metric_cards["elapsed"].set_value(_fmt_time(time.time() - self.start_time))
+        self.metric_cards["downloaded"].set_value(_format_bytes(self.total_bytes))
+        self.metric_cards["remain"].set_value("--")
+        if self.content_length > 0:
+            pct = min(100, int(self.total_bytes * 100 / self.content_length))
+            self.progress.configure(value=pct)
+            self.pct_label.configure(text=f"{pct}%")
+        else:
+            self.pct_label.configure(text="")
         self.downloading = False
         self._cleanup_stop()
         if self._status_key == "complete":
