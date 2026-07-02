@@ -5,8 +5,6 @@ package.domain = org.cdnspeedtest
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 1.0.0
-version.regex = ^VERSION\s*=\s*["\'](.*)["\']
-version.filename = core/constants.py
 requirements = python3,kivy,requests,pyjnius,android
 orientation = portrait
 osx.python_version = 3
