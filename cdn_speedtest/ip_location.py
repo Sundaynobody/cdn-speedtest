@@ -93,7 +93,6 @@ class IpLocationMixin:
             services = [
                 ("http://ip-api.com/json", 10, IpLocationMixin._parse_ipapi, 1),
                 ("https://ipinfo.io/json", 8, IpLocationMixin._parse_ipinfo, 2),
-                ("https://myip.ipip.net/json", 8, IpLocationMixin._parse_ipsb, 3),
             ]
 
             def _fetch(url, timeout, parser):

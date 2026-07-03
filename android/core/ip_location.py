@@ -85,7 +85,6 @@ def get_ip_info(on_result, on_error=None):
         services = [
             ("http://ip-api.com/json", 10, _parse_ipapi, 1),
             ("https://ipinfo.io/json", 8, _parse_ipinfo, 2),
-            ("https://myip.ipip.net/json", 8, _parse_ipsb, 3),
         ]
 
         def fetch(url, timeout, parser):
