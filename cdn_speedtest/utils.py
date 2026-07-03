@@ -1,20 +1,22 @@
-import os, sys, platform, json, re, ctypes
+import os, sys, platform, re, ctypes
 import tkinter as tk
-from tkinter import messagebox
-import ttkbootstrap as tb
 from . import constants
-from .i18n import t
 from .constants import _UI_FONT, _MONO_FONT
 
 
 def get_config_dir():
-    p = os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), "CDNSpeedTest")
-    os.makedirs(p, exist_ok=True)
-    return p
+    return os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), "CDNSpeedTest")
 
 
-constants._IP_CACHE_FILE = os.path.join(get_config_dir(), "ip_cache.json")
-constants._load_ip_cache()
+def _cleanup_old_cache():
+    cfg_dir = get_config_dir()
+    if os.path.isdir(cfg_dir):
+        for fname in os.listdir(cfg_dir):
+            if fname.endswith(".json"):
+                try:
+                    os.remove(os.path.join(cfg_dir, fname))
+                except Exception:
+                    pass
 
 
 def resource_path(filename):
@@ -67,21 +69,7 @@ def set_window_icon(window):
 
 
 def load_config():
-    path = os.path.join(get_config_dir(), constants.CONFIG_FILE)
-    if os.path.exists(path):
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                nodes = data.get("nodes", [])
-                if isinstance(nodes, list) and len(nodes) > 0:
-                    valid = [n for n in nodes if isinstance(n, dict) and "name" in n and "url" in n]
-                    return {
-                        "defaultIndex": data.get("defaultIndex", 0),
-                        "language": data.get("language", "en"),
-                        "nodes": valid or [dict(n) for n in constants.DEFAULT_CONFIG["nodes"]],
-                    }
-        except Exception:
-            pass
+    _cleanup_old_cache()
     return {
         "defaultIndex": constants.DEFAULT_CONFIG["defaultIndex"],
         "language": constants.DEFAULT_CONFIG["language"],
@@ -90,12 +78,7 @@ def load_config():
 
 
 def save_config(config):
-    path = os.path.join(get_config_dir(), constants.CONFIG_FILE)
-    try:
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(config, f, ensure_ascii=False, indent=2)
-    except Exception as e:
-        messagebox.showerror(t("save_failed"), t("save_failed_msg", e=str(e)))
+    pass
 
 
 def _format_speed(bps):

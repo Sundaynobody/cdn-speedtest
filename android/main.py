@@ -1,12 +1,11 @@
-import os, json, platform
+import os
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.properties import StringProperty, NumericProperty, ObjectProperty
-from kivy.lang import Builder
+from kivy.properties import StringProperty, NumericProperty
 from kivy.utils import platform as kivy_platform
 
-from core.constants import VERSION, DEFAULT_CONFIG, CONFIG_FILE
+from core.constants import VERSION, DEFAULT_CONFIG
 from core.i18n import t, set_language, LANG, _supported_langs
 from core.ip_location import get_ip_info
 from core.network import NetworkMixin
@@ -16,30 +15,23 @@ from core.downloader import Downloader, _format_speed, _format_bytes, _fmt_time
 def get_config_dir():
     if kivy_platform == "android":
         from android.storage import app_storage_path
-        p = os.path.join(app_storage_path(), ".cdn_speedtest")
-    else:
-        p = os.path.join(os.path.expanduser("~"), ".cdn_speedtest")
-    os.makedirs(p, exist_ok=True)
-    return p
+        return os.path.join(app_storage_path(), ".cdn_speedtest")
+    return os.path.join(os.path.expanduser("~"), ".cdn_speedtest")
+
+
+def _cleanup_old_cache():
+    cfg_dir = get_config_dir()
+    if os.path.isdir(cfg_dir):
+        for fname in os.listdir(cfg_dir):
+            if fname.endswith(".json"):
+                try:
+                    os.remove(os.path.join(cfg_dir, fname))
+                except Exception:
+                    pass
 
 
 def load_config():
-    path = os.path.join(get_config_dir(), CONFIG_FILE)
-    if os.path.exists(path):
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                nodes = data.get("nodes", [])
-                if isinstance(nodes, list) and len(nodes) > 0:
-                    valid = [n for n in nodes
-                             if isinstance(n, dict) and "name" in n and "url" in n]
-                    return {
-                        "defaultIndex": data.get("defaultIndex", 0),
-                        "language": data.get("language", "en"),
-                        "nodes": valid or [dict(n) for n in DEFAULT_CONFIG["nodes"]],
-                    }
-        except Exception:
-            pass
+    _cleanup_old_cache()
     return {
         "defaultIndex": DEFAULT_CONFIG["defaultIndex"],
         "language": DEFAULT_CONFIG["language"],
@@ -48,12 +40,7 @@ def load_config():
 
 
 def save_config(config):
-    path = os.path.join(get_config_dir(), CONFIG_FILE)
-    try:
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(config, f, ensure_ascii=False, indent=2)
-    except Exception:
-        pass
+    pass
 
 
 class MainScreen(Screen):
@@ -65,8 +52,12 @@ class MainScreen(Screen):
     node_count = NumericProperty(0)
     progress_pct = NumericProperty(0)
     btn_start_text = StringProperty("")
-    btn_start_disabled = False
-    btn_stop_disabled = True
+    card_realtime = StringProperty("--")
+    card_max = StringProperty("--")
+    card_avg = StringProperty("--")
+    card_downloaded = StringProperty("--")
+    card_elapsed = StringProperty("--")
+    card_remain = StringProperty("--")
 
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -154,27 +145,19 @@ class MainScreen(Screen):
     def _on_progress(self, data):
         def update(dt, d=data):
             self.progress_pct = d["percent"]
-            if hasattr(self, "card_realtime"):
-                self.card_realtime = _format_speed(d["realtime_speed"])
-            if hasattr(self, "card_max"):
-                self.card_max = _format_speed(d["max_speed"])
-            if hasattr(self, "card_avg"):
-                self.card_avg = _format_speed(d["avg_speed"])
-            if hasattr(self, "card_downloaded"):
-                self.card_downloaded = _format_bytes(d["total_bytes"])
-            if hasattr(self, "card_elapsed"):
-                self.card_elapsed = _fmt_time(d["elapsed"])
-            if hasattr(self, "card_remain"):
-                remain = "--"
-                if self._dl.content_length > 0 and d["realtime_speed"] > 0:
-                    rm = max(0, self._dl.content_length - d["total_bytes"]) / \
-                         d["realtime_speed"]
-                    remain = _fmt_time(rm)
-                elif d["total_bytes"] > 0 and d["realtime_speed"] > 0:
-                    rm = max(0, d["total_bytes"] / d["realtime_speed"] -
-                             d["elapsed"])
-                    remain = _fmt_time(rm)
-                self.card_remain = remain
+            self.card_realtime = _format_speed(d["realtime_speed"])
+            self.card_max = _format_speed(d["max_speed"])
+            self.card_avg = _format_speed(d["avg_speed"])
+            self.card_downloaded = _format_bytes(d["total_bytes"])
+            self.card_elapsed = _fmt_time(d["elapsed"])
+            remain = "--"
+            if self._dl.content_length > 0 and d["realtime_speed"] > 0:
+                rm = max(0, self._dl.content_length - d["total_bytes"]) / d["realtime_speed"]
+                remain = _fmt_time(rm)
+            elif d["total_bytes"] > 0 and d["realtime_speed"] > 0:
+                rm = max(0, d["total_bytes"] / d["realtime_speed"] - d["elapsed"])
+                remain = _fmt_time(rm)
+            self.card_remain = remain
         Clock.schedule_once(update)
 
     def _on_complete(self):

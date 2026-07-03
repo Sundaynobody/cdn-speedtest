@@ -1,4 +1,4 @@
-import time, json, re, threading, concurrent.futures, requests
+import re, threading, concurrent.futures, requests
 from . import constants
 from .i18n import t
 
@@ -14,26 +14,6 @@ def _normalize_isp(isp, asn):
         return constants._ISP_ASN_MAP[asn]
     return isp or ""
 
-
-def _parse_ipsb(data):
-    ip = data.get("ip", "")
-    if not ip:
-        return None
-    parts = [p for p in [data.get("country"), data.get("region"),
-                         data.get("city")] if p]
-    loc = " \u2014 ".join(parts) if parts else ""
-    isp = data.get("isp", "").strip()
-    if not isp:
-        org = data.get("organization", "").strip()
-        if org:
-            isp = _clean_org(org)
-    asn = data.get("asn", 0)
-    isp = _normalize_isp(isp, asn)
-    if isp:
-        loc += f" \u00B7 {isp}"
-    if asn:
-        loc += f" \u00B7 AS{asn}"
-    return (ip, loc, asn)
 
 def _parse_ipinfo(data):
     ip = data.get("ip", "")

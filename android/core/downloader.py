@@ -71,6 +71,11 @@ class Downloader:
                     ar = r.headers.get("Accept-Ranges", "").lower()
                     if ar and ar != "none" and "bytes" in ar:
                         supports_range = True
+                    if not supports_range and total_size > 0:
+                        with s.get(url, stream=True, timeout=10,
+                                  headers={"Range": "bytes=0-0"}) as r2:
+                            if r2.status_code == 206:
+                                supports_range = True
         except Exception:
             pass
         self.content_length = max(total_size, 0)
