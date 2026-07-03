@@ -71,7 +71,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y python3-pip openjdk-17-jdk autoconf automake cmake \
-            libtool pkg-config libssl-dev libffi-dev python3-dev zlib1g-dev
+            libtool libltdl-dev pkg-config libssl-dev libffi-dev python3-dev zlib1g-dev
           pip install --user buildozer cython
           echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: Build APK
