@@ -98,9 +98,9 @@ class DownloadMixin:
             for i in range(workers):
                 s = i * seg_size
                 e = total_size - 1 if i == workers - 1 else (i + 1) * seg_size - 1
-                t = threading.Thread(target=_worker, args=(i, s, e), daemon=True)
-                t.start()
-                threads.append(t)
+                th = threading.Thread(target=_worker, args=(i, s, e), daemon=True)
+                th.start()
+                threads.append(th)
 
             last_total = 0
             last_time = time.time()
@@ -119,7 +119,7 @@ class DownloadMixin:
                     te = now - self.start_time
                     if te > 0: self.avg_speed = total / te
 
-            for t in threads: t.join(timeout=2)
+            for th in threads: th.join(timeout=2)
             final_total = sum(worker_bytes)
             self.total_bytes = final_total
             if 0 < final_total < self.content_length:

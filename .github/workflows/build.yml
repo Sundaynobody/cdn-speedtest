@@ -67,15 +67,19 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      # Host Python must match the p4a target Python (3.11, pinned via
+      # p4a.branch=v2024.01.21 in buildozer.spec). Newer p4a (master) targets
+      # Python 3.14, whose C API breaks Kivy's pre-generated Cython sources.
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.11"
       - name: Install buildozer
         run: |
           sudo apt update
           sudo apt install -y python3-pip openjdk-17-jdk autoconf automake cmake \
             libtool libltdl-dev pkg-config libssl-dev libffi-dev python3-dev zlib1g-dev
-          pip install --user buildozer cython
+          # Cython <3.1 required to cythonize Kivy 2.3.x sources.
+          pip install --user buildozer==1.5.0 "cython==3.0.11"
           echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: Build APK
         env:
@@ -83,7 +87,7 @@ jobs:
         run: |
           java -version
           cd android
-          yes | buildozer android debug 2>&1
+          buildozer android debug
       - uses: actions/upload-artifact@v4
         with:
           name: CDNSpeedTest_Android

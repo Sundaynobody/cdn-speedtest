@@ -1,2 +1,35 @@
+# Python
 __pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# Build output
 dist/
+build/
+*.spec.bak
+
+# Android / buildozer
+android/.buildozer/
+android/bin/
+*.apk
+*.aab
+
+# PyInstaller
+*.manifest
+
+# CI logs & debug artifacts (not part of the project)
+logs_*/
+logs_*.zip
+*_android.txt
+check_ci*.py
+setup_py38.py
+install_py38_deps.py
+CDNSpeedTest_Android/
+CDNSpeedTest_Android.zip
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

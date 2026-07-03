@@ -5,15 +5,16 @@ package.domain = org.cdnspeedtest
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 4.4.0
-requirements = python3,kivy==2.3.0,requests,certifi
+requirements = python3,kivy==2.3.1,requests,certifi
 orientation = portrait
 fullscreen = 0
 presplash_color = #2c3e50
 icon = assets/icon.png
 android.api = 33
 android.minapi = 21
-android.ndk = 26c
+android.ndk = 25b
 android.build_tools = 33.0.2
+p4a.branch = v2024.01.21
 android.archs = arm64-v8a, armeabi-v7a
 android.accept_sdk_license = True
 android.private_storage = True
