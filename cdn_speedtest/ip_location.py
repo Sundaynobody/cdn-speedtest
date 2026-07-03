@@ -90,11 +90,10 @@ class IpLocationMixin:
             if _IP_CACHE["ip"] and now - _IP_CACHE["time"] < _IP_CACHE_TTL:
                 self.root.after(0, lambda: self._show_ip_info(_IP_CACHE["ip"], _IP_CACHE["loc"]))
                 return
-            # priority: ip.sb > ipinfo.io > ip-api.com
             services = [
-                ("https://api.ip.sb/geoip/", 8, IpLocationMixin._parse_ipsb, 1),
+                ("http://ip-api.com/json", 10, IpLocationMixin._parse_ipapi, 1),
                 ("https://ipinfo.io/json", 8, IpLocationMixin._parse_ipinfo, 2),
-                ("https://ip-api.com/json", 10, IpLocationMixin._parse_ipapi, 3),
+                ("https://myip.ipip.net/json", 8, IpLocationMixin._parse_ipsb, 3),
             ]
 
             def _fetch(url, timeout, parser):
