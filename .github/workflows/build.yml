@@ -70,13 +70,23 @@ jobs:
       - name: Install buildozer
         run: |
           sudo apt update
-          sudo apt install -y python3-pip openjdk-17-jdk autoconf automake \
-            libtool pkg-config libssl-dev libffi-dev python3-dev
+          sudo apt install -y python3-pip openjdk-17-jdk autoconf automake cmake \
+            libtool pkg-config libssl-dev libffi-dev python3-dev zlib1g-dev
           pip install --user buildozer cython
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: Build APK
+        env:
+          JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
         run: |
+          java -version
           cd android
-          yes | buildozer android debug 2>&1
+          yes 2>/dev/null | buildozer android debug > build.log 2>&1; rc=$?
+          echo "=== BUILD EXIT CODE: $rc ==="
+          echo "=== LAST 80 LINES ==="
+          tail -80 build.log
+          echo "=== ERROR MATCHES ==="
+          grep -in -E "(error|failed|traceback|exception|cannot|not found)" build.log || echo "(none found)"
+          exit $rc
       - uses: actions/upload-artifact@v4
         with:
           name: CDNSpeedTest_Android
