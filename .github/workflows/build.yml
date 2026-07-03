@@ -9,8 +9,8 @@ jobs:
   windows:
     strategy:
       matrix:
-        arch: [x86, x86_64, arm64]
-    runs-on: ${{ matrix.arch == 'arm64' && 'windows-arm64' || 'windows-latest' }}
+        arch: [x86, x86_64]
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -28,8 +28,8 @@ jobs:
   macos:
     strategy:
       matrix:
-        arch: [x86_64, arm64]
-    runs-on: ${{ matrix.arch == 'arm64' && 'macos-latest' || 'macos-13' }}
+        arch: [arm64]
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -37,11 +37,11 @@ jobs:
           python-version: "3.13"
       - run: pip install -r requirements.txt pyinstaller
       - run: python gen_icon.py
-      - run: python build.py --arch ${{ matrix.arch }}
+      - run: python build.py --arch arm64
       - uses: actions/upload-artifact@v4
         with:
-          name: CDNSpeedTest_macOS_${{ matrix.arch }}
-          path: dist/CDNSpeedTest_${{ matrix.arch }}
+          name: CDNSpeedTest_macOS_arm64
+          path: dist/CDNSpeedTest_arm64
 
   linux:
     strategy:
