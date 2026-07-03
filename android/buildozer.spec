@@ -5,7 +5,7 @@ package.domain = org.cdnspeedtest
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 4.4.0
-requirements = python3,kivy==2.3.0,requests
+requirements = python3,kivy==2.3.0,requests,certifi,pyjnius
 orientation = portrait
 fullscreen = 0
 presplash_color = #2c3e50
