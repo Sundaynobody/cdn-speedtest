@@ -14,8 +14,11 @@ from core.downloader import Downloader, _format_speed, _format_bytes, _fmt_time
 
 def get_config_dir():
     if kivy_platform == "android":
-        from android.storage import app_storage_path
-        return os.path.join(app_storage_path(), ".cdn_speedtest")
+        try:
+            from android.storage import app_storage_path
+            return os.path.join(app_storage_path(), ".cdn_speedtest")
+        except ImportError:
+            return os.path.join(os.environ.get("EXTERNAL_STORAGE", os.path.expanduser("~")), ".cdn_speedtest")
     return os.path.join(os.path.expanduser("~"), ".cdn_speedtest")
 
 
