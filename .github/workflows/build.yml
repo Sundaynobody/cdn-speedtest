@@ -91,3 +91,21 @@ jobs:
         with:
           name: CDNSpeedTest_Android
           path: android/bin/*.apk
+
+  release:
+    needs: [windows, macos, linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: CDNSpeedTest_*
+          merge-multiple: true
+          path: release/
+      - run: ls -la release/
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
+          generate_release_notes: true
