@@ -80,12 +80,12 @@ jobs:
         run: |
           java -version
           cd android
-          yes 2>/dev/null | buildozer android debug > build.log 2>&1; rc=$?
-          echo "=== BUILD EXIT CODE: $rc ==="
-          echo "=== LAST 80 LINES ==="
-          tail -80 build.log
+          set +e
+          yes 2>/dev/null | buildozer android debug 2>&1 | tee build.log; rc=$?
+          set -e
+          echo "=== EXIT CODE: $rc ==="
           echo "=== ERROR MATCHES ==="
-          grep -in -E "(error|failed|traceback|exception|cannot|not found)" build.log || echo "(none found)"
+          grep -in -E "(error|failed|traceback|exception)" build.log || echo "(none)"
           exit $rc
       - uses: actions/upload-artifact@v4
         with:
