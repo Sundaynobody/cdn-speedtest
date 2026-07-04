@@ -1,4 +1,4 @@
-import os, sys, platform, re, ctypes
+import os, sys, platform, re, ctypes, json
 import tkinter as tk
 from . import constants
 from .constants import _UI_FONT, _MONO_FONT
@@ -10,13 +10,15 @@ def get_config_dir():
 
 def _cleanup_old_cache():
     cfg_dir = get_config_dir()
-    if os.path.isdir(cfg_dir):
-        for fname in os.listdir(cfg_dir):
-            if fname.endswith(".json"):
-                try:
-                    os.remove(os.path.join(cfg_dir, fname))
-                except Exception:
-                    pass
+    if not os.path.isdir(cfg_dir):
+        return
+    _keep = {"config.json", "ip_cache.json"}
+    for fname in os.listdir(cfg_dir):
+        if fname.endswith(".json") and fname not in _keep:
+            try:
+                os.remove(os.path.join(cfg_dir, fname))
+            except Exception:
+                pass
 
 
 def resource_path(filename):
@@ -70,6 +72,19 @@ def set_window_icon(window):
 
 def load_config():
     _cleanup_old_cache()
+    if constants._IP_CACHE_FILE is None:
+        constants._IP_CACHE_FILE = os.path.join(get_config_dir(), "ip_cache.json")
+    constants._load_ip_cache()
+    cfg_dir = get_config_dir()
+    cfg_file = os.path.join(cfg_dir, "config.json")
+    if os.path.isfile(cfg_file):
+        try:
+            with open(cfg_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if "nodes" in data and isinstance(data["nodes"], list):
+                return data
+        except Exception:
+            pass
     return {
         "defaultIndex": constants.DEFAULT_CONFIG["defaultIndex"],
         "language": constants.DEFAULT_CONFIG["language"],
@@ -78,7 +93,19 @@ def load_config():
 
 
 def save_config(config):
-    pass
+    cfg_dir = get_config_dir()
+    os.makedirs(cfg_dir, exist_ok=True)
+    cfg_file = os.path.join(cfg_dir, "config.json")
+    tmp_file = cfg_file + ".tmp"
+    try:
+        with open(tmp_file, "w", encoding="utf-8") as f:
+            json.dump(config, f, ensure_ascii=False, indent=2)
+        os.replace(tmp_file, cfg_file)
+    except Exception:
+        try:
+            os.remove(tmp_file)
+        except Exception:
+            pass
 
 
 def _format_speed(bps):

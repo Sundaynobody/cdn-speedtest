@@ -277,7 +277,8 @@ class NetworkMixin:
 
     def _win_get_eth(self):
         out = self._run_powershell(
-            r'(Get-NetAdapter -Physical | Where-Object MediaType -EQ "802.3" | '
+            r'(Get-NetAdapter -Physical | Where-Object {$_.MediaType -eq "802.3" -and $_.Status -eq "Up"} | '
+            r'Sort-Object LinkSpeed -Descending | '
             r'Select-Object -First 1 Name,LinkSpeed | ConvertTo-Json -Compress)')
         if not out:
             return None

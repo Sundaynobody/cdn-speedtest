@@ -62,7 +62,7 @@
                     on_release: root.start_test()
 
                 Button:
-                    text: "Stop"
+                    text: root.btn_stop_text
                     size_hint_y: 0.5
                     background_color: "#c0392b"
                     on_release: root.stop_test()
@@ -74,7 +74,7 @@
             height: "160dp"
 
             Label:
-                text: "Speed Results"
+                text: root.card_title
                 font_size: "14sp"
                 bold: True
                 halign: "left"
@@ -90,7 +90,7 @@
                 BoxLayout:
                     orientation: "vertical"
                     Label:
-                        text: "Real-time"
+                        text: root.card_realtime_label
                         font_size: "10sp"
                         color: "#999"
                     Label:
@@ -101,7 +101,7 @@
                 BoxLayout:
                     orientation: "vertical"
                     Label:
-                        text: "Max"
+                        text: root.card_max_label
                         font_size: "10sp"
                         color: "#999"
                     Label:
@@ -112,7 +112,7 @@
                 BoxLayout:
                     orientation: "vertical"
                     Label:
-                        text: "Average"
+                        text: root.card_avg_label
                         font_size: "10sp"
                         color: "#999"
                     Label:
@@ -123,7 +123,7 @@
                 BoxLayout:
                     orientation: "vertical"
                     Label:
-                        text: "Elapsed"
+                        text: root.card_elapsed_label
                         font_size: "10sp"
                         color: "#999"
                     Label:
@@ -134,7 +134,7 @@
                 BoxLayout:
                     orientation: "vertical"
                     Label:
-                        text: "Remaining"
+                        text: root.card_remain_label
                         font_size: "10sp"
                         color: "#999"
                     Label:
@@ -145,7 +145,7 @@
                 BoxLayout:
                     orientation: "vertical"
                     Label:
-                        text: "Downloaded"
+                        text: root.card_downloaded_label
                         font_size: "10sp"
                         color: "#999"
                     Label:
@@ -184,7 +184,7 @@
                 size_hint_x: 0.6
 
             Button:
-                text: "Settings"
+                text: root.btn_settings_text
                 size_hint_x: 0.2
                 background_color: "#7f8c8d"
                 on_release: root.open_settings()
@@ -209,18 +209,18 @@
             spacing: "8dp"
 
             Button:
-                text: "< Back"
+                text: root.btn_back_text
                 size_hint_x: 0.3
                 on_release: root.go_back()
 
             Label:
-                text: "Node Manager"
+                text: root.settings_title_text
                 bold: True
                 font_size: "16sp"
                 size_hint_x: 0.7
 
         Label:
-            text: "Node List"
+            text: root.node_list_text
             bold: True
             font_size: "13sp"
             size_hint_y: None
@@ -228,7 +228,7 @@
 
         # Placeholder for node list
         Label:
-            text: "Use the PC version to manage nodes"
+            text: root.node_list_hint
             color: "#999"
             size_hint_y: None
             height: "40dp"

@@ -75,15 +75,25 @@ def get_ip_info(on_result, on_error=None):
                 return None
 
         best = None
-        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as ex:
-            fut_prio = {ex.submit(fetch, u, t, p): pri
-                        for u, t, p, pri in services}
+        top_prio = min(pri for *_, pri in services)
+        ex = concurrent.futures.ThreadPoolExecutor(max_workers=len(services))
+        try:
+            fut_prio = {ex.submit(fetch, u, timeout, p): pri
+                        for u, timeout, p, pri in services}
             for f in concurrent.futures.as_completed(fut_prio):
                 result = f.result()
                 if result:
                     pri = fut_prio[f]
                     if best is None or pri < best[0]:
                         best = (pri, result[0], result[1], result[2])
+                    # Highest-priority service answered; no need to wait
+                    # for the slower fallbacks. (C4)
+                    if best[0] == top_prio:
+                        break
+        finally:
+            # Don't block on in-flight fallback requests; this runs in a
+            # daemon thread so any leftover work is harmless. (C4)
+            ex.shutdown(wait=False)
 
         if best:
             ip, loc, asn = best[1], best[2], best[3]
