@@ -78,8 +78,10 @@ jobs:
           sudo apt update
           sudo apt install -y python3-pip openjdk-17-jdk autoconf automake cmake \
             libtool libltdl-dev pkg-config libssl-dev libffi-dev python3-dev zlib1g-dev
-          # Cython <3.1 required to cythonize Kivy 2.3.x sources.
-          pip install --user buildozer==1.5.0 "cython==3.0.11"
+          # Cython 0.29.19 is the version p4a v2024.01.21 is validated against
+          # (per its Dockerfile). Cython 3.x reorders cythonize vs compile in the
+          # CythonRecipe, causing "no such file or directory: *.c" clang failures.
+          pip install --user buildozer==1.5.0 "cython==0.29.19"
           echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: Build APK
         env:

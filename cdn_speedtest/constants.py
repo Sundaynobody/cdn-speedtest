@@ -1,4 +1,4 @@
-import ctypes, os, sys, platform, json, subprocess
+import ctypes, os, sys, platform, json, subprocess, time
 
 if platform.system() == "Windows":
     try:
@@ -15,7 +15,11 @@ if platform.system() == "Windows" and platform.release() == "7":
         import ssl
         ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
+        try:
+            import certifi
+            ctx.load_verify_locations(certifi.where())
+        except ImportError:
+            ctx.verify_mode = ssl.CERT_NONE
         ssl._create_default_https_context = lambda: ctx
     except Exception:
         pass
@@ -36,14 +40,33 @@ _UI_FONT = {"Windows": "Microsoft YaHei UI", "Darwin": "PingFang SC"}.get(platfo
 _MONO_FONT = {"Windows": "Consolas", "Darwin": "Menlo"}.get(platform.system(), "Liberation Mono")
 
 _IP_CACHE = {"ip": "", "loc": "", "asn": 0, "time": 0.0}
-_IP_CACHE_TTL = 0
+_IP_CACHE_TTL = 300
 _IP_CACHE_FILE = None
 
 def _load_ip_cache():
-    pass
+    global _IP_CACHE
+    if _IP_CACHE_FILE is None:
+        return
+    try:
+        if os.path.isfile(_IP_CACHE_FILE):
+            with open(_IP_CACHE_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if time.time() - data.get("time", 0) < _IP_CACHE_TTL:
+                _IP_CACHE.update(data)
+    except Exception:
+        pass
 
 def _save_ip_cache():
-    pass
+    if _IP_CACHE_FILE is None:
+        return
+    try:
+        os.makedirs(os.path.dirname(_IP_CACHE_FILE), exist_ok=True)
+        tmp = _IP_CACHE_FILE + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(_IP_CACHE, f, ensure_ascii=False)
+        os.replace(tmp, _IP_CACHE_FILE)
+    except Exception:
+        pass
 
 _ISP_ASN_MAP = {
     4134: "中国电信", 4808: "中国联通", 9808: "中国移动",

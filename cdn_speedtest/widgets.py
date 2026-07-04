@@ -133,6 +133,9 @@ class SettingsDialog:
         if not url:
             messagebox.showwarning("", t("url_empty"), parent=self.dialog)
             return
+        if not url.startswith(("http://", "https://")):
+            messagebox.showwarning("", t("url_invalid"), parent=self.dialog)
+            return
         self.config["nodes"].append({"name": name, "url": url})
         self._refresh_list(); save_config(self.config); self.callback(self.config)
 
@@ -154,6 +157,9 @@ class SettingsDialog:
         url = url.strip()
         if not url:
             messagebox.showwarning("", t("url_empty"), parent=self.dialog)
+            return
+        if not url.startswith(("http://", "https://")):
+            messagebox.showwarning("", t("url_invalid"), parent=self.dialog)
             return
         self.config["nodes"][idx] = {"name": name, "url": url}
         self._refresh_list(); save_config(self.config); self.callback(self.config)

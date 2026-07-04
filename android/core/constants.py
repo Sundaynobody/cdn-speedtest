@@ -1,10 +1,37 @@
+import os, json, time
+
 VERSION = "4.4.0"
 CHUNK_SIZE = 1048576
 CONFIG_FILE = ""
 
 _IP_CACHE = {"ip": "", "loc": "", "asn": 0, "time": 0.0}
-_IP_CACHE_TTL = 0
+_IP_CACHE_TTL = 300
 _IP_CACHE_FILE = None
+
+def _load_ip_cache():
+    global _IP_CACHE
+    if _IP_CACHE_FILE is None:
+        return
+    try:
+        if os.path.isfile(_IP_CACHE_FILE):
+            with open(_IP_CACHE_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if time.time() - data.get("time", 0) < _IP_CACHE_TTL:
+                _IP_CACHE.update(data)
+    except Exception:
+        pass
+
+def _save_ip_cache():
+    if _IP_CACHE_FILE is None:
+        return
+    try:
+        os.makedirs(os.path.dirname(_IP_CACHE_FILE), exist_ok=True)
+        tmp = _IP_CACHE_FILE + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(_IP_CACHE, f, ensure_ascii=False)
+        os.replace(tmp, _IP_CACHE_FILE)
+    except Exception:
+        pass
 
 _ISP_ASN_MAP = {
     4134: "\u4e2d\u56fd\u7535\u4fe1", 4808: "\u4e2d\u56fd\u8054\u901a", 9808: "\u4e2d\u56fd\u79fb\u52a8",
@@ -47,8 +74,3 @@ DEFAULT_CONFIG = {
     ],
 }
 
-def _load_ip_cache():
-    pass
-
-def _save_ip_cache():
-    pass

@@ -1,4 +1,4 @@
-import os
+import os, json
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -24,17 +24,33 @@ def get_config_dir():
 
 def _cleanup_old_cache():
     cfg_dir = get_config_dir()
-    if os.path.isdir(cfg_dir):
-        for fname in os.listdir(cfg_dir):
-            if fname.endswith(".json"):
-                try:
-                    os.remove(os.path.join(cfg_dir, fname))
-                except Exception:
-                    pass
+    if not os.path.isdir(cfg_dir):
+        return
+    _keep = {"config.json", "ip_cache.json"}
+    for fname in os.listdir(cfg_dir):
+        if fname.endswith(".json") and fname not in _keep:
+            try:
+                os.remove(os.path.join(cfg_dir, fname))
+            except Exception:
+                pass
 
 
 def load_config():
     _cleanup_old_cache()
+    from core import constants as core_constants
+    if core_constants._IP_CACHE_FILE is None:
+        core_constants._IP_CACHE_FILE = os.path.join(get_config_dir(), "ip_cache.json")
+    core_constants._load_ip_cache()
+    cfg_dir = get_config_dir()
+    cfg_file = os.path.join(cfg_dir, "config.json")
+    if os.path.isfile(cfg_file):
+        try:
+            with open(cfg_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if "nodes" in data and isinstance(data["nodes"], list):
+                return data
+        except Exception:
+            pass
     return {
         "defaultIndex": DEFAULT_CONFIG["defaultIndex"],
         "language": DEFAULT_CONFIG["language"],
@@ -43,7 +59,19 @@ def load_config():
 
 
 def save_config(config):
-    pass
+    cfg_dir = get_config_dir()
+    os.makedirs(cfg_dir, exist_ok=True)
+    cfg_file = os.path.join(cfg_dir, "config.json")
+    tmp_file = cfg_file + ".tmp"
+    try:
+        with open(tmp_file, "w", encoding="utf-8") as f:
+            json.dump(config, f, ensure_ascii=False, indent=2)
+        os.replace(tmp_file, cfg_file)
+    except Exception:
+        try:
+            os.remove(tmp_file)
+        except Exception:
+            pass
 
 
 class MainScreen(Screen):
@@ -55,12 +83,21 @@ class MainScreen(Screen):
     node_count = NumericProperty(0)
     progress_pct = NumericProperty(0)
     btn_start_text = StringProperty("")
+    btn_stop_text = StringProperty("")
+    card_title = StringProperty("")
     card_realtime = StringProperty("--")
+    card_realtime_label = StringProperty("")
     card_max = StringProperty("--")
+    card_max_label = StringProperty("")
     card_avg = StringProperty("--")
+    card_avg_label = StringProperty("")
     card_downloaded = StringProperty("--")
+    card_downloaded_label = StringProperty("")
     card_elapsed = StringProperty("--")
+    card_elapsed_label = StringProperty("")
     card_remain = StringProperty("--")
+    card_remain_label = StringProperty("")
+    btn_settings_text = StringProperty("")
 
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -82,6 +119,15 @@ class MainScreen(Screen):
 
     def _refresh_ui(self):
         self.btn_start_text = t("start_test")
+        self.btn_stop_text = t("stop")
+        self.card_title = t("speed_results")
+        self.card_realtime_label = t("realtime_speed")
+        self.card_max_label = t("max_speed")
+        self.card_avg_label = t("avg_speed")
+        self.card_elapsed_label = t("elapsed")
+        self.card_remain_label = t("remaining")
+        self.card_downloaded_label = t("downloaded")
+        self.btn_settings_text = t("settings")
         ns = self._config["nodes"]
         self.node_count = len(ns)
         idx = self._config["defaultIndex"]
@@ -121,9 +167,15 @@ class MainScreen(Screen):
         sm = self.manager
         s = sm.get_screen("settings")
         s.load_config(self._config)
+        s.btn_back_text = t("close")
+        s.settings_title_text = t("settings_title")
+        s.node_list_text = t("node_list")
+        s.node_list_hint = t("no_nodes")
         sm.current = "settings"
 
     def start_test(self):
+        if self._dl.running:
+            return
         ns = self._config["nodes"]
         if not ns:
             self.status_text = t("no_nodes")
@@ -181,6 +233,11 @@ class MainScreen(Screen):
 
 
 class SettingsScreen(Screen):
+    btn_back_text = StringProperty("")
+    settings_title_text = StringProperty("")
+    node_list_text = StringProperty("")
+    node_list_hint = StringProperty("")
+
     def __init__(self, **kw):
         super().__init__(**kw)
         self._config = None

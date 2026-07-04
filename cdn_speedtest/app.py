@@ -2,7 +2,7 @@ import tkinter as tk
 import ttkbootstrap as tb
 from ttkbootstrap.constants import *
 from tkinter import filedialog, messagebox
-import time, os, json, sys, platform
+import time, os, json, sys, platform, threading
 
 from . import constants
 from .i18n import t, set_language
@@ -36,6 +36,7 @@ class SpeedTester(NetworkMixin, IpLocationMixin, DownloadMixin):
         self._status_key = "ready"
         self._status_msg = None
         self.start_time = 0
+        self._download_start = 0
         self.total_bytes = 0
         self.last_bytes = 0
         self.last_time = 0
@@ -43,6 +44,7 @@ class SpeedTester(NetworkMixin, IpLocationMixin, DownloadMixin):
         self.avg_speed = 0.0
         self.realtime_speed = 0.0
         self.content_length = 0
+        self._stats_lock = threading.Lock()
         self.display_timer = None
         self.metric_cards = {}
         self._speed_frame = None
