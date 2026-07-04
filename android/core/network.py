@@ -10,12 +10,13 @@ except ImportError:
 class NetworkMixin:
 
     def get_network_info(self):
-        data = {"type": "unknown", "ssid": "", "rate": 0, "band": "", "signal": 0}
+        data = {"type": "unknown", "ssid": "", "rate": 0,
+                "band": "", "name": "", "signal": 0}
         try:
-            sys = platform.system()
-            if _ON_ANDROID or sys == "Linux":
+            system_name = platform.system()
+            if _ON_ANDROID or system_name == "Linux":
                 data = self._linux_get_net() or data
-            elif sys == "Darwin":
+            elif system_name == "Darwin":
                 data = self._mac_get_wifi() or self._mac_get_eth() or data
         except Exception:
             pass
@@ -41,46 +42,105 @@ class NetworkMixin:
             for dev in glob.glob("/sys/class/net/*"):
                 name = dev.split("/")[-1]
                 try:
-                    op = open(f"{dev}/operstate").read().strip()
+                    with open(f"{dev}/operstate") as f:
+                        op = f.read().strip()
                 except Exception:
                     continue
                 if op != "up":
                     continue
                 if os.path.isdir(f"{dev}/wireless"):
-                    r = subprocess.run(["iw", "dev", name, "link"],
-                                       capture_output=True, text=True, timeout=5)
-                    if r.returncode != 0:
-                        continue
-                    d = {"type": "wifi", "ssid": "", "rate": 0,
-                         "band": "", "signal": 0}
-                    for line in r.stdout.splitlines():
-                        s = line.strip()
-                        if s.startswith("SSID:"):
-                            d["ssid"] = s.split(":", 1)[1].strip()
-                        elif "freq:" in s:
-                            try:
-                                freq = int(s.split(":")[1].strip().split()[0])
-                                d["band"] = "6 GHz" if freq > 6000 else (
-                                    "5 GHz" if freq > 2500 else "2.4 GHz")
-                            except Exception:
-                                pass
-                        elif "tx bitrate:" in s:
-                            m = re.search(r'([\d.]+)\s*MBit/s', s)
-                            if m:
-                                d["rate"] = float(m.group(1))
-                    if d["ssid"]:
+                    d = self._linux_get_wifi(name)
+                    if d:
                         return d
                 else:
                     try:
-                        speed = int(open(f"{dev}/speed").read().strip())
+                        with open(f"{dev}/speed") as f:
+                            speed = int(f.read().strip())
                         if speed > 0:
                             return {"type": "ethernet", "ssid": "",
-                                    "rate": speed, "band": "", "signal": 0}
+                                    "rate": speed, "band": "",
+                                    "name": name, "signal": 0}
                     except Exception:
                         pass
             return None
         except Exception:
             return None
+
+    def _linux_get_wifi(self, name):
+        d = {"type": "wifi", "ssid": "", "rate": 0,
+             "band": "", "name": name, "signal": 0}
+
+        try:
+            r = subprocess.run(["iw", "dev", name, "link"],
+                               capture_output=True, text=True, timeout=5)
+            if r.returncode == 0:
+                for line in r.stdout.splitlines():
+                    s = line.strip()
+                    if s.startswith("SSID:"):
+                        d["ssid"] = s.split(":", 1)[1].strip()
+                    elif "freq:" in s:
+                        try:
+                            freq = int(s.split(":")[1].strip().split()[0])
+                            d["band"] = "6 GHz" if freq > 6000 else (
+                                "5 GHz" if freq > 2500 else "2.4 GHz")
+                        except Exception:
+                            pass
+                    elif "tx bitrate:" in s:
+                        m = re.search(r'([\d.]+)\s*MBit/s', s)
+                        if m:
+                            d["rate"] = float(m.group(1))
+                if d["ssid"]:
+                    return d
+        except Exception:
+            pass
+
+        try:
+            with open("/proc/net/wireless") as f:
+                lines = f.readlines()
+            for line in lines[2:]:
+                parts = line.split()
+                if len(parts) >= 4 and parts[0].rstrip(":") == name:
+                    try:
+                        sig = int(parts[2])
+                        d["signal"] = min(100, max(0, sig))
+                        d["ssid"] = name
+                    except (ValueError, IndexError):
+                        pass
+                    break
+        except Exception:
+            pass
+
+        try:
+            r = subprocess.run(
+                ["dumpsys", "wifi"],
+                capture_output=True, text=True, timeout=5)
+            if r.returncode == 0:
+                for line in r.stdout.splitlines():
+                    s = line.strip()
+                    if "mWifiInfo" in s or "SSID:" in s:
+                        m = re.search(r'SSID:\s*"?([^",]+)', s)
+                        if m and not d["ssid"]:
+                            d["ssid"] = m.group(1).strip()
+                    elif "Link speed:" in s:
+                        m = re.search(r'Link speed:\s*(\d+)', s)
+                        if m:
+                            d["rate"] = float(m.group(1))
+                    elif "Frequency:" in s:
+                        m = re.search(r'Frequency:\s*(\d+)', s)
+                        if m:
+                            freq = int(m.group(1))
+                            d["band"] = "6 GHz" if freq > 6000 else (
+                                "5 GHz" if freq > 2500 else "2.4 GHz")
+                    elif "level:" in s:
+                        m = re.search(r'level:\s*(-?\d+)', s)
+                        if m:
+                            sig_dbm = int(m.group(1))
+                            d["signal"] = min(100, max(0, int(
+                                (sig_dbm + 100) * 2)))
+        except Exception:
+            pass
+
+        return d if d["ssid"] else None
 
     def _mac_get_wifi(self):
         try:
@@ -95,7 +155,7 @@ class NetworkMixin:
             if r.returncode != 0:
                 return None
             d = {"type": "wifi", "ssid": "", "rate": 0,
-                 "band": "", "signal": 0}
+                 "band": "", "name": "Wi-Fi", "signal": 0}
             for line in r.stdout.splitlines():
                 s = line.strip()
                 if s.startswith("SSID"):
@@ -132,7 +192,7 @@ class NetworkMixin:
                     if m:
                         return {"type": "ethernet", "ssid": "",
                                 "rate": int(m.group(1)),
-                                "band": "", "signal": 0}
+                                "band": "", "name": iface, "signal": 0}
             return None
         except Exception:
             return None

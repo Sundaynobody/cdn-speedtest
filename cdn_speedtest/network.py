@@ -1,4 +1,4 @@
-import subprocess, platform, os, threading, time, json, re, glob
+import subprocess, platform, os, threading, json, re, glob
 from .constants import _HIDE_CONSOLE
 
 
@@ -34,7 +34,7 @@ class NetworkMixin:
                 capture_output=True, timeout=10,
                 startupinfo=_HIDE_CONSOLE
             )
-            out = r.stdout.decode("utf-8", errors="replace").strip()
+            out = r.stdout.decode("utf-8", errors="replace").strip().lstrip("\ufeff")
             if r.returncode == 0 and out and out not in ("null", ""):
                 # trim outer JSON array/quote markers if present
                 if len(out) > 2 and out[0] == '"' and out[-1] == '"':
@@ -215,26 +215,19 @@ class NetworkMixin:
                 startupinfo=_HIDE_CONSOLE
             )
             if r.returncode == 0:
-                d = self._parse_wlan_output(r.stdout.decode("utf-8", errors="replace"))
+                text = r.stdout.decode("oem", errors="replace")
+                d = self._parse_wlan_output(text)
                 if d:
                     return d
         except Exception:
             pass
 
         # try 2: via PowerShell (handles encoding / environment quirks)
-        try:
-            r = subprocess.run(
-                ["powershell", "-NoProfile", "-NonInteractive",
-                 "-Command", "netsh wlan show interfaces"],
-                capture_output=True, timeout=10,
-                startupinfo=_HIDE_CONSOLE
-            )
-            if r.returncode == 0:
-                d = self._parse_wlan_output(r.stdout.decode("utf-8", errors="replace"))
-                if d:
-                    return d
-        except Exception:
-            pass
+        out = self._run_powershell("netsh wlan show interfaces")
+        if out:
+            d = self._parse_wlan_output(out)
+            if d:
+                return d
 
         return None
 
@@ -304,7 +297,8 @@ class NetworkMixin:
             for dev in glob.glob("/sys/class/net/*"):
                 name = dev.split("/")[-1]
                 try:
-                    op = open(f"{dev}/operstate").read().strip()
+                    with open(f"{dev}/operstate") as f:
+                        op = f.read().strip()
                 except Exception:
                     continue
                 if op != "up":
@@ -332,7 +326,8 @@ class NetworkMixin:
                         return d
                 else:
                     try:
-                        speed = int(open(f"{dev}/speed").read().strip())
+                        with open(f"{dev}/speed") as f:
+                            speed = int(f.read().strip())
                         if speed > 0:
                             return {"type": "ethernet", "ssid": "", "rate": speed,
                                     "band": "", "name": name, "signal": 0}
