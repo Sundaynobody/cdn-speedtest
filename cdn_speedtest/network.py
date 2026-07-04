@@ -164,12 +164,34 @@ class NetworkMixin:
         d = {"type": "wifi", "ssid": "", "rate": 0,
              "band": "", "name": "Wi-Fi", "signal": 0}
         has_ssid = False
-        _CHANNEL_KEYS = {"channel", "kanal", "canal", "kana\u0142",
-                         "\u043A\u0430\u043D\u0430\u043B", "\u0627\u0644\u0642\u0646\u0627\u0629",
-                         "\u901A\u9053", "\u9891\u9053"}
-        _SIGNAL_KEYS = {"signal", "\u0441\u0438\u0433\u043D\u0430\u043B",
-                        "\u0627\u0644\u0625\u0634\u0627\u0631\u0629",
-                        "\u4FE1\u53F7", "\u4FE1\u865F"}
+        _CHANNEL_KEYS = {
+            "channel", "kanal", "canal", "kana\u0142",
+            "\u043A\u0430\u043D\u0430\u043B", "\u0627\u0644\u0642\u0646\u0627\u0629",
+            "\u901A\u9053", "\u9891\u9053",
+            "\u30C1\u30E3\u30F3\u30CD\u30EB",
+            "\uCC3D\uB2E4",
+        }
+        _SIGNAL_KEYS = {
+            "signal", "\u0441\u0438\u0433\u043D\u0430\u043B",
+            "\u0627\u0644\u0625\u0634\u0627\u0631\u0629",
+            "\u4FE1\u53F7", "\u4FE1\u865F",
+            "\u30B7\u30AE\u30CA\u30EB",
+            "\uC2E0\uD658",
+        }
+        _RATE_KEYS = {
+            "receive rate", "transmit rate",
+            "\u63A5\u6536\u901F\u7387", "\u53D1\u9001\u901F\u7387",
+            "\u63A5\u6536\u901F\u7387", "\u53D1\u9001\u901F\u7387",
+            "\u043F\u043E\u043B\u0443\u0447\u0435\u043D\u043E", "\u043F\u0435\u0440\u0435\u0434\u0430\u043D\u043E",
+            "empfangsrate", "sendcrate",
+            "tasa de recepci\u00F3n", "tasa de transmisi\u00F3n",
+            "taxa de recep\u00E7\u00E3o", "taxa de transmiss\u00E3o",
+            "velocit\u00E0 di ricezione", "velocit\u00E0 di trasmissione",
+            "debit r\u00E9ception", "debit \u00E9mission",
+            "pr\u0119dko\u015B odbioru", "pr\u0119dko\u015B wysy\u0142ania",
+            "\u0441\u043A\u043E\u0440\u043E\u0441\u0442\u044C \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F",
+            "\u0441\u043A\u043E\u0440\u043E\u0441\u0442\u044C \u043F\u0435\u0440\u0435\u0434\u0430\u0447\u0438",
+        }
         for line in text.splitlines():
             s = line.strip()
             if ":" not in s:
@@ -188,8 +210,14 @@ class NetworkMixin:
                         d["rate"] = r
                 except ValueError:
                     pass
+            elif key_lower in _RATE_KEYS or any(k in key_lower for k in _RATE_KEYS):
+                try:
+                    r = float(val.split()[0])
+                    if r > d["rate"]:
+                        d["rate"] = r
+                except ValueError:
+                    pass
             elif "ghz" in val.lower() or "\u0433\u0433\u0446" in val.lower():
-                # Direct Band field (Win10 2004+): "5 GHz", "2.4 GHz", "6 GHz"
                 d["band"] = val
             elif key_lower in _CHANNEL_KEYS:
                 try:
@@ -204,6 +232,14 @@ class NetworkMixin:
                     d["signal"] = int(val.rstrip("%"))
                 except ValueError:
                     pass
+            elif "freq" in key_lower or "\u0447\u0430\u0441\u0442\u043E\u0442\u0430" in key_lower:
+                try:
+                    freq = int(val.split()[0])
+                    if not d["band"]:
+                        d["band"] = "6 GHz" if freq > 6000 else (
+                            "5 GHz" if freq > 2500 else "2.4 GHz")
+                except ValueError:
+                    pass
         return d if has_ssid else None
 
     def _win_get_wifi(self):
@@ -215,7 +251,15 @@ class NetworkMixin:
                 startupinfo=_HIDE_CONSOLE
             )
             if r.returncode == 0:
-                text = r.stdout.decode("oem", errors="replace")
+                for enc in ("oem", "utf-8", "gbk", "cp949", "cp1251"):
+                    try:
+                        text = r.stdout.decode(enc, errors="strict")
+                        d = self._parse_wlan_output(text)
+                        if d:
+                            return d
+                    except (UnicodeDecodeError, LookupError):
+                        continue
+                text = r.stdout.decode("utf-8", errors="replace")
                 d = self._parse_wlan_output(text)
                 if d:
                     return d
