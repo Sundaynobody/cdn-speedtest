@@ -180,7 +180,8 @@ class NetworkMixin:
             if key_lower == "ssid" and "bssid" not in key_lower:
                 d["ssid"] = val
                 has_ssid = True
-            elif "mbps" in key_lower or "mbit" in key_lower or "\u043C\u0431\u0438\u0442" in key_lower:
+            elif ("mbps" in key_lower or "mbit" in key_lower or "\u043C\u0431\u0438\u0442" in key_lower
+                  or "mbps" in val.lower() or "mbit" in val.lower()):
                 try:
                     r = float(val.split()[0])
                     if r > d["rate"]:
